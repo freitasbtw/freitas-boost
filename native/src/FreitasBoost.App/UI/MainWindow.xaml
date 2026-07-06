@@ -8,43 +8,36 @@
         <MicaBackdrop Kind="Base" />
     </Window.SystemBackdrop>
 
-    <Grid Background="#0B0C0E">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <Grid MaxWidth="1120" Padding="24" HorizontalAlignment="Center" RowSpacing="14">
-                <Grid.Resources>
-                    <SolidColorBrush x:Key="SurfaceBrush" Color="#131518" />
-                    <SolidColorBrush x:Key="Surface2Brush" Color="#181B1F" />
-                    <SolidColorBrush x:Key="BorderBrushSoft" Color="#22FFFFFF" />
-                    <SolidColorBrush x:Key="TextBrush" Color="#E8EAED" />
-                    <SolidColorBrush x:Key="MutedBrush" Color="#888F98" />
-                    <SolidColorBrush x:Key="FaintBrush" Color="#5B626B" />
-                    <SolidColorBrush x:Key="AccentBrush" Color="#34D399" />
-                    <SolidColorBrush x:Key="InfoBrush" Color="#7DD3FC" />
-                    <SolidColorBrush x:Key="WarningBrush" Color="#FBBF24" />
-                    <SolidColorBrush x:Key="DangerBrush" Color="#F0746A" />
+    <Grid Background="#0B0C0E" ColumnDefinitions="236,*">
+        <Grid.Resources>
+            <SolidColorBrush x:Key="SurfaceBrush" Color="#131518" />
+            <SolidColorBrush x:Key="Surface2Brush" Color="#181B1F" />
+            <SolidColorBrush x:Key="Surface3Brush" Color="#0F1114" />
+            <SolidColorBrush x:Key="BorderBrushSoft" Color="#22FFFFFF" />
+            <SolidColorBrush x:Key="TextBrush" Color="#E8EAED" />
+            <SolidColorBrush x:Key="MutedBrush" Color="#888F98" />
+            <SolidColorBrush x:Key="FaintBrush" Color="#5B626B" />
+            <SolidColorBrush x:Key="AccentBrush" Color="#34D399" />
+            <SolidColorBrush x:Key="InfoBrush" Color="#7DD3FC" />
+            <SolidColorBrush x:Key="WarningBrush" Color="#FBBF24" />
+            <SolidColorBrush x:Key="DangerBrush" Color="#F0746A" />
 
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-                        <Setter Property="TextWrapping" Value="Wrap" />
-                    </Style>
-                    <Style TargetType="Button">
-                        <Setter Property="CornerRadius" Value="8" />
-                        <Setter Property="Padding" Value="14,8" />
-                        <Setter Property="FontWeight" Value="SemiBold" />
-                    </Style>
-                </Grid.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Padding" Value="14,8" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Style>
+        </Grid.Resources>
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <Grid ColumnDefinitions="Auto,*,Auto">
+        <Border Background="#101216" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,1,0" Padding="18,22">
+            <Grid RowDefinitions="Auto,*,Auto">
+                <StackPanel Spacing="14">
                     <StackPanel Orientation="Horizontal" Spacing="12">
-                        <Border Width="40" Height="40" CornerRadius="10" Background="#2434D399" BorderBrush="#5534D399" BorderThickness="1">
+                        <Border Width="42" Height="42" CornerRadius="10" Background="#2434D399" BorderBrush="#5534D399" BorderThickness="1">
                             <FontIcon Glyph="&#xE945;" Foreground="{StaticResource AccentBrush}" FontSize="20" />
                         </Border>
                         <StackPanel>
@@ -56,173 +49,489 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <Button x:Name="AdminChip" Grid.Column="2" Click="OnAdminChipClick" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}">
+                    <Button x:Name="AdminChip" Click="OnAdminChipClick" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" HorizontalAlignment="Stretch">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Ellipse x:Name="AdminDot" Width="7" Height="7" Fill="{StaticResource FaintBrush}" />
                             <TextBlock x:Name="AdminLabel" Text="Verificando permissoes..." FontSize="12" />
                         </StackPanel>
                     </Button>
-                </Grid>
+                </StackPanel>
 
-                <InfoBar
-                    x:Name="StatusInfoBar"
-                    Grid.Row="1"
-                    IsOpen="False"
-                    IsClosable="True" />
+                <StackPanel Grid.Row="1" Spacing="8" Margin="0,30,0,0">
+                    <Button x:Name="NavOptimizeButton" Tag="Otimizar" Click="OnNavClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderBrush="Transparent">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <FontIcon Glyph="&#xE950;" FontSize="16" Foreground="{StaticResource AccentBrush}" />
+                            <TextBlock Text="Otimizar" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="NavHistoryButton" Tag="Histórico" Click="OnNavClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderBrush="Transparent">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <FontIcon Glyph="&#xE81C;" FontSize="16" Foreground="{StaticResource InfoBrush}" />
+                            <TextBlock Text="Histórico" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="NavSpecsButton" Tag="Specs do computador" Click="OnNavClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderBrush="Transparent">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <FontIcon Glyph="&#xE964;" FontSize="16" Foreground="{StaticResource WarningBrush}" />
+                            <TextBlock Text="Specs do computador" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="NavSettingsButton" Tag="Configurações" Click="OnNavClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderBrush="Transparent">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <FontIcon Glyph="&#xE713;" FontSize="16" Foreground="{StaticResource FaintBrush}" />
+                            <TextBlock Text="Configurações" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
 
-                <Grid Grid.Row="2" ColumnSpacing="1" Background="{StaticResource BorderBrushSoft}">
+                <StackPanel Grid.Row="2" Spacing="6">
+                    <TextBlock Text="v0.1.0 native" Foreground="{StaticResource FaintBrush}" FontFamily="Cascadia Mono" FontSize="11" />
+                    <TextBlock Text="Electron legado preservado" Foreground="{StaticResource FaintBrush}" FontSize="11" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*">
+            <Grid Padding="24,22,24,12" ColumnDefinitions="*,Auto">
+                <StackPanel>
+                    <TextBlock x:Name="PageTitle" Text="Otimizar" FontSize="22" FontWeight="SemiBold" />
+                    <TextBlock x:Name="PageSubtitle" Text="Prepare o PC, revise o backup e aplique ajustes reversiveis." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                </StackPanel>
+                <Button Grid.Column="1" Content="Ver onboarding" Click="OnShowOnboardingClick" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" />
+            </Grid>
+
+            <InfoBar
+                x:Name="StatusInfoBar"
+                Grid.Row="1"
+                Margin="24,0,24,12"
+                IsOpen="False"
+                IsClosable="True" />
+
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                <Grid MaxWidth="1240" Padding="24,0,24,24" HorizontalAlignment="Center" ColumnSpacing="14">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.6*" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="360" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Background="{StaticResource SurfaceBrush}" Padding="14" CornerRadius="10,0,0,10">
-                        <StackPanel Spacing="8">
-                            <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Text="Memoria RAM" Foreground="{StaticResource MutedBrush}" FontSize="11" />
-                                <TextBlock x:Name="RamValue" Grid.Column="1" Text="--" FontWeight="SemiBold" />
-                            </Grid>
-                            <ProgressBar x:Name="RamBar" Minimum="0" Maximum="100" Value="0" Foreground="{StaticResource AccentBrush}" />
-                        </StackPanel>
-                    </Border>
+                    <Grid x:Name="PageHost">
+                        <StackPanel x:Name="OptimizePage" Spacing="14">
+                            <Border
+                                x:Name="OnboardingPanel"
+                                Background="{StaticResource SurfaceBrush}"
+                                BorderBrush="{StaticResource BorderBrushSoft}"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="16">
+                                <Border.Transitions>
+                                    <TransitionCollection>
+                                        <EntranceThemeTransition FromVerticalOffset="18" />
+                                    </TransitionCollection>
+                                </Border.Transitions>
 
-                    <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" Padding="14">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="Processador" Foreground="{StaticResource MutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="CpuValue" Text="--" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                        </StackPanel>
-                    </Border>
+                                <Grid ColumnSpacing="18">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.35*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="2" Background="{StaticResource SurfaceBrush}" Padding="14" CornerRadius="0,10,10,0">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="Plano de energia" Foreground="{StaticResource MutedBrush}" FontSize="11" />
-                            <TextBlock x:Name="PlanValue" Text="--" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                        </StackPanel>
-                    </Border>
-                </Grid>
+                                    <StackPanel Spacing="12">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                            <Border Width="42" Height="42" CornerRadius="10" Background="#2234D399" BorderBrush="#5534D399" BorderThickness="1">
+                                                <ProgressRing x:Name="OnboardingRing" IsActive="True" Width="24" Height="24" Foreground="{StaticResource AccentBrush}" />
+                                            </Border>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock x:Name="OnboardingTitle" Text="Preparando seu perfil" FontSize="17" FontWeight="SemiBold" />
+                                                <TextBlock x:Name="OnboardingSubtitle" Text="Identificando memoria, processador, energia e snapshots locais antes de aplicar ajustes." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                            </StackPanel>
+                                            <Border Grid.Column="2" Background="{StaticResource Surface3Brush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="12" Padding="10,5" VerticalAlignment="Center">
+                                                <TextBlock x:Name="ReadinessBadge" Text="Analisando" Foreground="{StaticResource InfoBrush}" FontSize="12" FontWeight="SemiBold" />
+                                            </Border>
+                                        </Grid>
 
-                <Grid Grid.Row="3" ColumnSpacing="14">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.5*" />
-                        <ColumnDefinition Width="0.95*" MinWidth="340" />
-                    </Grid.ColumnDefinitions>
+                                        <ProgressBar x:Name="OnboardingProgress" Minimum="0" Maximum="100" Value="18" Foreground="{StaticResource AccentBrush}" />
 
-                    <StackPanel Spacing="14">
-                        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="18">
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
-                                <StackPanel>
-                                    <TextBlock Text="Boost competitivo" FontSize="18" FontWeight="SemiBold" />
-                                    <TextBlock Text="Aplica ajustes reversiveis e preserva o que pode causar stutter antes da partida." Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" />
-                                </StackPanel>
-                                <Button x:Name="BoostAllButton" Grid.Column="1" Content="Boost agora" Click="OnBoostAllClick" Background="{StaticResource AccentBrush}" Foreground="#05140D" Padding="26,12" />
-                            </Grid>
-                        </Border>
+                                        <Grid ColumnSpacing="8" RowSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
 
-                        <TextBlock x:Name="BoostSummary" Visibility="Collapsed" Foreground="{StaticResource AccentBrush}" />
-
-                        <Grid x:Name="BoostTimeline" ColumnSpacing="8" Visibility="Collapsed">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="10">
-                                <StackPanel>
-                                    <TextBlock Text="Limpeza" FontWeight="SemiBold" />
-                                    <TextBlock x:Name="StepClean" Text="Aguardando" Foreground="{StaticResource MutedBrush}" FontSize="12" />
-                                </StackPanel>
-                            </Border>
-                            <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="10">
-                                <StackPanel>
-                                    <TextBlock Text="RAM" FontWeight="SemiBold" />
-                                    <TextBlock x:Name="StepRam" Text="Aguardando" Foreground="{StaticResource MutedBrush}" FontSize="12" />
-                                </StackPanel>
-                            </Border>
-                            <Border Grid.Column="2" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="10">
-                                <StackPanel>
-                                    <TextBlock Text="Modo FPS" FontWeight="SemiBold" />
-                                    <TextBlock x:Name="StepFps" Text="Aguardando" Foreground="{StaticResource MutedBrush}" FontSize="12" />
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-
-                        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10">
-                            <StackPanel>
-                            <Border Padding="16" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
-                                <Grid ColumnDefinitions="34,*,Auto" ColumnSpacing="14">
-                                    <Border Background="{StaticResource Surface2Brush}" CornerRadius="8">
-                                        <FontIcon Glyph="&#xE74D;" Foreground="{StaticResource MutedBrush}" />
-                                    </Border>
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="Limpeza de temporarios" FontWeight="SemiBold" />
-                                        <TextBlock Text="%Temp%, Temp do Windows, cache web e dumps. Prefetch e Lixeira ficam preservados." Foreground="{StaticResource MutedBrush}" FontSize="12" />
-                                        <TextBlock x:Name="CleanResult" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" FontSize="12" />
+                                            <Border Background="{StaticResource Surface3Brush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="10">
+                                                <StackPanel>
+                                                    <TextBlock Text="Memoria" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                                                    <TextBlock x:Name="ScanRamText" Text="aguardando leitura" FontWeight="SemiBold" FontSize="12" />
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Grid.Column="1" Background="{StaticResource Surface3Brush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="10">
+                                                <StackPanel>
+                                                    <TextBlock Text="CPU" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                                                    <TextBlock x:Name="ScanCpuText" Text="identificando processador" FontWeight="SemiBold" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Grid.Row="1" Background="{StaticResource Surface3Brush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="10">
+                                                <StackPanel>
+                                                    <TextBlock Text="Energia" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                                                    <TextBlock x:Name="ScanPowerText" Text="lendo plano ativo" FontWeight="SemiBold" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource Surface3Brush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="10">
+                                                <StackPanel>
+                                                    <TextBlock Text="Rollback" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                                                    <TextBlock x:Name="ScanHistoryText" Text="procurando backups" FontWeight="SemiBold" FontSize="12" />
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
                                     </StackPanel>
-                                    <Button x:Name="CleanButton" Grid.Column="2" Content="Limpar" Click="OnCleanClick" />
-                                </Grid>
-                            </Border>
 
-                            <Border Padding="16" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
-                                <Grid ColumnDefinitions="34,*,Auto" ColumnSpacing="14">
-                                    <Border Background="{StaticResource Surface2Brush}" CornerRadius="8">
-                                        <FontIcon Glyph="&#xE950;" Foreground="{StaticResource MutedBrush}" />
-                                    </Border>
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="Otimizar RAM" FontWeight="SemiBold" />
-                                        <TextBlock Text="Libera memoria presa em processos antes de jogar." Foreground="{StaticResource MutedBrush}" FontSize="12" />
-                                        <TextBlock x:Name="RamResult" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" FontSize="12" />
-                                    </StackPanel>
-                                    <Button x:Name="RamButton" Grid.Column="2" Content="Otimizar" Click="OnRamClick" />
-                                </Grid>
-                            </Border>
-
-                            <Border Padding="16" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
-                                <Grid ColumnDefinitions="34,*,Auto" ColumnSpacing="14">
-                                    <Border Background="{StaticResource Surface2Brush}" CornerRadius="8">
-                                        <FontIcon Glyph="&#xE9F5;" Foreground="{StaticResource MutedBrush}" />
-                                    </Border>
-                                    <StackPanel Grid.Column="1" Spacing="10">
-                                        <StackPanel>
-                                            <TextBlock Text="Encerrar processos" FontWeight="SemiBold" />
-                                            <TextBlock Text="Fecha apps em segundo plano que comem CPU e RAM." Foreground="{StaticResource MutedBrush}" FontSize="12" />
-                                            <TextBlock x:Name="ProcResult" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" FontSize="12" />
+                                    <Border Grid.Column="1" Background="{StaticResource Surface3Brush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="14">
+                                        <StackPanel Spacing="10">
+                                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                                <Border Width="34" Height="34" CornerRadius="8" Background="#227DD3FC" BorderBrush="#557DD3FC" BorderThickness="1">
+                                                    <FontIcon Glyph="&#xE72E;" Foreground="{StaticResource InfoBrush}" FontSize="16" />
+                                                </Border>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="Backup antes de aplicar" FontWeight="SemiBold" />
+                                                    <TextBlock x:Name="BackupDefaultText" Text="Acoes sensiveis vao oferecer snapshot como opcao principal antes de mudar configuracoes." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                                </StackPanel>
+                                            </Grid>
+                                            <Border Background="#14FBBF24" BorderBrush="#44FBBF24" BorderThickness="1" CornerRadius="8" Padding="10">
+                                                <TextBlock Text="UAC aparece somente quando uma acao realmente precisa de administrador." Foreground="{StaticResource WarningBrush}" FontSize="12" />
+                                            </Border>
                                         </StackPanel>
-                                        <ListView x:Name="ProcessList" SelectionMode="None" MaxHeight="230" Visibility="Collapsed">
-                                            <ListView.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10" Padding="6">
-                                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" />
-                                                        <TextBlock Grid.Column="1" Text="{Binding DisplayName}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                        <TextBlock Grid.Column="2" Text="{Binding TagText}" Foreground="{StaticResource InfoBrush}" VerticalAlignment="Center" FontSize="11" />
-                                                        <TextBlock Grid.Column="3" Text="{Binding MemoryText}" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" VerticalAlignment="Center" />
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ListView.ItemTemplate>
-                                        </ListView>
-                                        <Button x:Name="KillSelectedButton" Content="Encerrar selecionados" Click="OnKillSelectedClick" Visibility="Collapsed" HorizontalAlignment="Left" Foreground="{StaticResource DangerBrush}" />
-                                    </StackPanel>
-                                    <Button x:Name="AnalyzeProcessesButton" Grid.Column="2" Content="Analisar" Click="OnAnalyzeProcessesClick" />
+                                    </Border>
                                 </Grid>
                             </Border>
 
-                            <Border Padding="16">
-                                <Grid ColumnDefinitions="34,*,Auto" ColumnSpacing="14">
-                                    <Border Background="{StaticResource Surface2Brush}" CornerRadius="8">
-                                        <FontIcon Glyph="&#xE9D9;" Foreground="{StaticResource MutedBrush}" />
-                                    </Border>
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="Modo FPS" FontWeight="SemiBold" />
-                                        <TextBlock Text="Alto desempenho, Modo Jogo e Game DVR off com snapshot para restaurar." Foreground="{StaticResource MutedBrush}" FontSize="12" />
-                                        <TextBlock x:Name="FpsResult" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" FontSize="12" />
-                                        <Button Content="Restaurar estado anterior" Click="OnRestoreModeClick" HorizontalAlignment="Left" Background="Transparent" Foreground="{StaticResource FaintBrush}" Padding="0,8,0,0" />
+                            <Grid ColumnSpacing="1" Background="{StaticResource BorderBrushSoft}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.6*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Background="{StaticResource SurfaceBrush}" Padding="14" CornerRadius="10,0,0,10">
+                                    <StackPanel Spacing="8">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="Memoria RAM" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                                            <TextBlock x:Name="RamValue" Grid.Column="1" Text="--" FontWeight="SemiBold" />
+                                        </Grid>
+                                        <ProgressBar x:Name="RamBar" Minimum="0" Maximum="100" Value="0" Foreground="{StaticResource AccentBrush}" />
                                     </StackPanel>
-                                    <Button x:Name="FpsButton" Grid.Column="2" Content="Ativar" Click="OnFpsClick" />
+                                </Border>
+
+                                <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" Padding="14">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Processador" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                                        <TextBlock x:Name="CpuValue" Text="--" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="2" Background="{StaticResource SurfaceBrush}" Padding="14" CornerRadius="0,10,10,0">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Plano de energia" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                                        <TextBlock x:Name="PlanValue" Text="--" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="18">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+                                    <StackPanel>
+                                        <TextBlock Text="Boost competitivo" FontSize="18" FontWeight="SemiBold" />
+                                        <TextBlock Text="Aplica ajustes reversiveis e preserva o que pode causar stutter antes da partida." Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                    <Button x:Name="BoostAllButton" Grid.Column="1" Content="Boost agora" Click="OnBoostAllClick" Background="{StaticResource AccentBrush}" Foreground="#05140D" Padding="26,12" />
                                 </Grid>
                             </Border>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
+
+                            <TextBlock x:Name="BoostSummary" Visibility="Collapsed" Foreground="{StaticResource AccentBrush}" />
+
+                            <Grid x:Name="BoostTimeline" ColumnSpacing="8" Visibility="Collapsed">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="10">
+                                    <StackPanel>
+                                        <TextBlock Text="Limpeza" FontWeight="SemiBold" />
+                                        <TextBlock x:Name="StepClean" Text="Aguardando" Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="10">
+                                    <StackPanel>
+                                        <TextBlock Text="RAM" FontWeight="SemiBold" />
+                                        <TextBlock x:Name="StepRam" Text="Aguardando" Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="2" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="10">
+                                    <StackPanel>
+                                        <TextBlock Text="Modo FPS" FontWeight="SemiBold" />
+                                        <TextBlock x:Name="StepFps" Text="Aguardando" Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10">
+                                <StackPanel>
+                                    <Border Padding="16" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
+                                        <Grid ColumnDefinitions="34,*,Auto" ColumnSpacing="14">
+                                            <Border Background="{StaticResource Surface2Brush}" CornerRadius="8">
+                                                <FontIcon Glyph="&#xE74D;" Foreground="{StaticResource MutedBrush}" />
+                                            </Border>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="Limpeza de temporarios" FontWeight="SemiBold" />
+                                                <TextBlock Text="%Temp%, Temp do Windows, cache web e dumps. Prefetch e Lixeira ficam preservados." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                                <TextBlock x:Name="CleanResult" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" FontSize="12" />
+                                            </StackPanel>
+                                            <Button x:Name="CleanButton" Grid.Column="2" Content="Limpar" Click="OnCleanClick" />
+                                        </Grid>
+                                    </Border>
+
+                                    <Border Padding="16" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
+                                        <Grid ColumnDefinitions="34,*,Auto" ColumnSpacing="14">
+                                            <Border Background="{StaticResource Surface2Brush}" CornerRadius="8">
+                                                <FontIcon Glyph="&#xE950;" Foreground="{StaticResource MutedBrush}" />
+                                            </Border>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="Otimizar RAM" FontWeight="SemiBold" />
+                                                <TextBlock Text="Libera memoria presa em processos antes de jogar." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                                <TextBlock x:Name="RamResult" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" FontSize="12" />
+                                            </StackPanel>
+                                            <Button x:Name="RamButton" Grid.Column="2" Content="Otimizar" Click="OnRamClick" />
+                                        </Grid>
+                                    </Border>
+
+                                    <Border Padding="16" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
+                                        <Grid ColumnDefinitions="34,*,Auto" ColumnSpacing="14">
+                                            <Border Background="{StaticResource Surface2Brush}" CornerRadius="8">
+                                                <FontIcon Glyph="&#xE9F5;" Foreground="{StaticResource MutedBrush}" />
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Spacing="10">
+                                                <StackPanel>
+                                                    <TextBlock Text="Encerrar processos" FontWeight="SemiBold" />
+                                                    <TextBlock Text="Fecha apps em segundo plano que comem CPU e RAM." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                                    <TextBlock x:Name="ProcResult" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" FontSize="12" />
+                                                </StackPanel>
+                                                <ListView x:Name="ProcessList" SelectionMode="None" MaxHeight="230" Visibility="Collapsed">
+                                                    <ListView.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10" Padding="6">
+                                                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                                                <TextBlock Grid.Column="1" Text="{Binding DisplayName}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                                <TextBlock Grid.Column="2" Text="{Binding TagText}" Foreground="{StaticResource InfoBrush}" VerticalAlignment="Center" FontSize="11" />
+                                                                <TextBlock Grid.Column="3" Text="{Binding MemoryText}" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" VerticalAlignment="Center" />
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ListView.ItemTemplate>
+                                                </ListView>
+                                                <Button x:Name="KillSelectedButton" Content="Encerrar selecionados" Click="OnKillSelectedClick" Visibility="Collapsed" HorizontalAlignment="Left" Foreground="{StaticResource DangerBrush}" />
+                                            </StackPanel>
+                                            <Button x:Name="AnalyzeProcessesButton" Grid.Column="2" Content="Analisar" Click="OnAnalyzeProcessesClick" />
+                                        </Grid>
+                                    </Border>
+
+                                    <Border Padding="16">
+                                        <Grid ColumnDefinitions="34,*,Auto" ColumnSpacing="14">
+                                            <Border Background="{StaticResource Surface2Brush}" CornerRadius="8">
+                                                <FontIcon Glyph="&#xE9D9;" Foreground="{StaticResource MutedBrush}" />
+                                            </Border>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="Modo FPS" FontWeight="SemiBold" />
+                                                <TextBlock Text="Alto desempenho, Modo Jogo e Game DVR off com snapshot para restaurar." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                                <TextBlock x:Name="FpsResult" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" FontSize="12" />
+                                                <Button Content="Restaurar estado anterior" Click="OnRestoreModeClick" HorizontalAlignment="Left" Background="Transparent" Foreground="{StaticResource FaintBrush}" Padding="0,8,0,0" />
+                                            </StackPanel>
+                                            <Button x:Name="FpsButton" Grid.Column="2" Content="Ativar" Click="OnFpsClick" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel x:Name="HistoryPage" Spacing="14" Visibility="Collapsed">
+                            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="18">
+                                <StackPanel>
+                                    <TextBlock Text="Historico local" FontSize="18" FontWeight="SemiBold" />
+                                    <TextBlock Text="Snapshots do plano de energia e ajustes do Windows para restaurar depois." Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10">
+                                <StackPanel>
+                                    <Border BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
+                                        <Grid Padding="14" ColumnDefinitions="*,Auto">
+                                            <StackPanel>
+                                                <TextBlock Text="Backups salvos" FontWeight="SemiBold" />
+                                                <TextBlock x:Name="HistoryPath" Text="Estados salvos neste PC" Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7">
+                                                <Button Content="Atualizar" Click="OnRefreshHistoryClick" />
+                                                <Button Content="Salvar atual" Click="OnSaveStateClick" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                    <ListView x:Name="StateHistoryList" MaxHeight="420" SelectionMode="Single">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Padding="8,6">
+                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding Meta}" Foreground="{StaticResource MutedBrush}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Padding="12">
+                                        <Button x:Name="RestoreStateButton" Content="Restaurar selecionado" Click="OnRestoreStateClick" />
+                                        <Button x:Name="DeleteStateButton" Content="Apagar selecionado" Click="OnDeleteStateClick" Foreground="{StaticResource DangerBrush}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel x:Name="SpecsPage" Spacing="14" Visibility="Collapsed">
+                            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="18">
+                                <StackPanel>
+                                    <TextBlock Text="Specs do computador" FontSize="18" FontWeight="SemiBold" />
+                                    <TextBlock Text="Leitura local de memoria, CPU, plano de energia, permissao e perfil competitivo." Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Grid ColumnSpacing="10" RowSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="14">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Memoria RAM" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                                        <TextBlock x:Name="SpecsRamValue" Text="--" FontSize="16" FontWeight="SemiBold" />
+                                        <ProgressBar x:Name="SpecsRamBar" Minimum="0" Maximum="100" Value="0" Foreground="{StaticResource AccentBrush}" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="14">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Processador" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                                        <TextBlock x:Name="SpecsCpuValue" Text="--" FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="14">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Plano de energia" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                                        <TextBlock x:Name="SpecsPlanValue" Text="--" FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="14">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Permissao" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                                        <TextBlock x:Name="SpecsAdminValue" Text="--" FontSize="16" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Row="2" Grid.ColumnSpan="2" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="14">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Rollback" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                                        <TextBlock x:Name="SpecsBackupValue" Text="--" FontSize="16" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10">
+                                <StackPanel>
+                                    <Grid Padding="16" ColumnDefinitions="*,Auto">
+                                        <StackPanel Orientation="Horizontal" Spacing="12">
+                                            <Border Width="38" Height="30" CornerRadius="8" Background="#227DD3FC" BorderBrush="#557DD3FC" BorderThickness="1">
+                                                <TextBlock Text="CS2" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource InfoBrush}" FontFamily="Cascadia Mono" FontWeight="SemiBold" />
+                                            </Border>
+                                            <StackPanel>
+                                                <TextBlock Text="Latencia competitiva" FontWeight="SemiBold" />
+                                                <TextBlock Text="GPU, Windows e tradeoff entre FPS e resposta." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <Button x:Name="Cs2Button" Grid.Column="1" Content="Analisar" Click="OnCs2Click" />
+                                    </Grid>
+                                    <StackPanel Padding="14" Spacing="10">
+                                        <TextBlock x:Name="Cs2Summary" Foreground="{StaticResource InfoBrush}" Visibility="Collapsed" />
+                                        <ItemsControl x:Name="Cs2Results" Visibility="Collapsed">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,8">
+                                                        <StackPanel>
+                                                            <Grid ColumnDefinitions="*,Auto">
+                                                                <TextBlock Text="{Binding Category}" Foreground="{StaticResource InfoBrush}" FontWeight="SemiBold" FontSize="11" />
+                                                                <TextBlock Grid.Column="1" Text="{Binding Impact}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                                            </Grid>
+                                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Margin="0,6,0,0" />
+                                                            <TextBlock Text="{Binding Tradeoff}" Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                                            <TextBlock Text="{Binding Action}" Foreground="{StaticResource FaintBrush}" FontSize="11" Margin="0,6,0,0" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel x:Name="SettingsPage" Spacing="14" Visibility="Collapsed">
+                            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="18">
+                                <StackPanel>
+                                    <TextBlock Text="Configurações" FontSize="18" FontWeight="SemiBold" />
+                                    <TextBlock Text="Preferencias de seguranca, rollback e execucao elevada." Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="16">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <Border Width="36" Height="36" CornerRadius="8" Background="#2234D399" BorderBrush="#5534D399" BorderThickness="1">
+                                        <FontIcon Glyph="&#xE72E;" Foreground="{StaticResource AccentBrush}" FontSize="16" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Backup antes de aplicar" FontWeight="SemiBold" />
+                                        <TextBlock Text="Modo FPS, Boost completo e restauracoes sempre perguntam se voce quer salvar snapshot antes." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                        <TextBlock x:Name="SettingsBackupPath" Text="Caminho do historico ainda nao carregado" Foreground="{StaticResource FaintBrush}" FontFamily="Cascadia Mono" FontSize="11" Margin="0,6,0,0" />
+                                    </StackPanel>
+                                    <Button Grid.Column="2" Content="Salvar agora" Click="OnSaveStateClick" />
+                                </Grid>
+                            </Border>
+
+                            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="16">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                    <Border Width="36" Height="36" CornerRadius="8" Background="#22FBBF24" BorderBrush="#55FBBF24" BorderThickness="1">
+                                        <FontIcon Glyph="&#xE7BA;" Foreground="{StaticResource WarningBrush}" FontSize="16" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Execucao elevada sob demanda" FontWeight="SemiBold" />
+                                        <TextBlock Text="O aplicativo abre sem exigir administrador. Acoes sensiveis chamam UAC somente quando necessario." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="16">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <Border Width="36" Height="36" CornerRadius="8" Background="#227DD3FC" BorderBrush="#557DD3FC" BorderThickness="1">
+                                        <FontIcon Glyph="&#xE946;" Foreground="{StaticResource InfoBrush}" FontSize="16" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Onboarding" FontWeight="SemiBold" />
+                                        <TextBlock Text="Revise o fluxo inicial com diagnostico do PC, backup e etapas de aplicacao." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                    </StackPanel>
+                                    <Button Grid.Column="2" Content="Abrir" Click="OnShowOnboardingClick" />
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
 
                     <StackPanel Grid.Column="1" Spacing="14">
                         <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10">
@@ -238,85 +547,20 @@
                                         </Border>
                                     </Grid>
                                 </Border>
+                                <ProgressBar x:Name="ActionProgressBar" IsIndeterminate="True" Visibility="Collapsed" Foreground="{StaticResource AccentBrush}" />
                                 <StackPanel x:Name="ActionLog" Padding="12" Spacing="7" />
                             </StackPanel>
                         </Border>
 
-                        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10">
-                            <StackPanel>
-                                <Border BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
-                                    <Grid Padding="14" ColumnDefinitions="*,Auto">
-                                        <StackPanel>
-                                            <TextBlock Text="Historico local" FontWeight="SemiBold" />
-                                            <TextBlock x:Name="HistoryPath" Text="Estados salvos neste PC" Foreground="{StaticResource MutedBrush}" FontSize="12" />
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7">
-                                            <Button Content="Atualizar" Click="OnRefreshHistoryClick" />
-                                            <Button Content="Salvar atual" Click="OnSaveStateClick" />
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-                                <ListView x:Name="StateHistoryList" MaxHeight="210" SelectionMode="Single">
-                                    <ListView.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Padding="8,6">
-                                                <TextBlock Text="{Binding Label}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                                <TextBlock Text="{Binding Meta}" Foreground="{StaticResource MutedBrush}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ListView.ItemTemplate>
-                                </ListView>
-                                <StackPanel Orientation="Horizontal" Spacing="8" Padding="12">
-                                    <Button x:Name="RestoreStateButton" Content="Restaurar selecionado" Click="OnRestoreStateClick" />
-                                    <Button x:Name="DeleteStateButton" Content="Apagar selecionado" Click="OnDeleteStateClick" Foreground="{StaticResource DangerBrush}" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10">
-                            <StackPanel>
-                                <Grid Padding="16" ColumnDefinitions="*,Auto">
-                                    <StackPanel Orientation="Horizontal" Spacing="12">
-                                        <Border Width="38" Height="30" CornerRadius="8" Background="#227DD3FC" BorderBrush="#557DD3FC" BorderThickness="1">
-                                            <TextBlock Text="CS2" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource InfoBrush}" FontFamily="Cascadia Mono" FontWeight="SemiBold" />
-                                        </Border>
-                                        <StackPanel>
-                                            <TextBlock Text="Latencia competitiva" FontWeight="SemiBold" />
-                                            <TextBlock Text="GPU, Windows e tradeoff entre FPS e resposta." Foreground="{StaticResource MutedBrush}" FontSize="12" />
-                                        </StackPanel>
-                                    </StackPanel>
-                                    <Button x:Name="Cs2Button" Grid.Column="1" Content="Analisar" Click="OnCs2Click" />
-                                </Grid>
-                                <StackPanel Padding="14" Spacing="10">
-                                    <TextBlock x:Name="Cs2Summary" Foreground="{StaticResource InfoBrush}" Visibility="Collapsed" />
-                                    <ItemsControl x:Name="Cs2Results" Visibility="Collapsed">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,8">
-                                                    <StackPanel>
-                                                        <Grid ColumnDefinitions="*,Auto">
-                                                            <TextBlock Text="{Binding Category}" Foreground="{StaticResource InfoBrush}" FontWeight="SemiBold" FontSize="11" />
-                                                            <TextBlock Grid.Column="1" Text="{Binding Impact}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextTrimming="CharacterEllipsis" />
-                                                        </Grid>
-                                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Margin="0,6,0,0" />
-                                                        <TextBlock Text="{Binding Tradeoff}" Foreground="{StaticResource MutedBrush}" FontSize="12" />
-                                                        <TextBlock Text="{Binding Action}" Foreground="{StaticResource FaintBrush}" FontSize="11" Margin="0,6,0,0" />
-                                                    </StackPanel>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
+                        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="14">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Fluxo seguro" FontWeight="SemiBold" />
+                                <TextBlock Text="Antes de alterar configuracoes do Windows, o app oferece backup local e mostra cada etapa aplicada aqui." Foreground="{StaticResource MutedBrush}" FontSize="12" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
                 </Grid>
-
-                <Grid Grid.Row="4" ColumnDefinitions="Auto,*" Margin="0,2,0,0">
-                    <TextBlock Text="v0.1.0 native" Foreground="{StaticResource FaintBrush}" FontFamily="Cascadia Mono" FontSize="11" />
-                    <TextBlock Grid.Column="1" Text="Feito para gamers que querem cada frame." Foreground="{StaticResource FaintBrush}" FontSize="11" HorizontalAlignment="Right" />
-                </Grid>
-            </Grid>
-        </ScrollViewer>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Window>

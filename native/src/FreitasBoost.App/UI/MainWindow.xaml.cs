@@ -23,6 +23,7 @@ public sealed partial class MainWindow : Window
     private readonly StateHistoryStore _history;
     private readonly Cs2ProfileAnalyzer _cs2 = new();
     private readonly DispatcherTimer _refreshTimer = new();
+    private bool _startupOnboardingShown;
 
     private readonly ObservableCollection<ProcessCandidateView> _processItems = [];
     private readonly ObservableCollection<StateSnapshotView> _stateItems = [];
@@ -39,6 +40,9 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         ProcessList.ItemsSource = _processItems;
         StateHistoryList.ItemsSource = _stateItems;
+        BeginOnboardingScan();
+        SetActionProgress(false);
+        ShowPage("Otimizar");
         AddLog("info", "Status", "Aguardando uma otimizacao");
 
         _refreshTimer.Interval = TimeSpan.FromSeconds(5);
@@ -49,6 +53,12 @@ public sealed partial class MainWindow : Window
             await LoadSystemInfoAsync();
             await LoadStateHistoryAsync();
             _refreshTimer.Start();
+            if (!_startupOnboardingShown)
+            {
+                _startupOnboardingShown = true;
+                await Task.Delay(250);
+                await ShowStartupOnboardingAsync();
+            }
         };
     }
 
@@ -63,9 +73,153 @@ public sealed partial class MainWindow : Window
         await Task.CompletedTask;
     }
 
+    private void OnNavClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: string page })
+        {
+            ShowPage(page);
+        }
+    }
+
+    private async void OnShowOnboardingClick(object sender, RoutedEventArgs e)
+    {
+        await ShowStartupOnboardingAsync();
+    }
+
+    private void ShowPage(string page)
+    {
+        var isOptimize = string.Equals(page, "Otimizar", StringComparison.OrdinalIgnoreCase);
+        var isHistory = string.Equals(page, "Histórico", StringComparison.OrdinalIgnoreCase);
+        var isSpecs = string.Equals(page, "Specs do computador", StringComparison.OrdinalIgnoreCase);
+        var isSettings = string.Equals(page, "Configurações", StringComparison.OrdinalIgnoreCase);
+
+        OptimizePage.Visibility = isOptimize ? Visibility.Visible : Visibility.Collapsed;
+        HistoryPage.Visibility = isHistory ? Visibility.Visible : Visibility.Collapsed;
+        SpecsPage.Visibility = isSpecs ? Visibility.Visible : Visibility.Collapsed;
+        SettingsPage.Visibility = isSettings ? Visibility.Visible : Visibility.Collapsed;
+
+        PageTitle.Text = page;
+        PageSubtitle.Text = page switch
+        {
+            "Histórico" => "Gerencie snapshots locais e restaure configuracoes com rollback.",
+            "Specs do computador" => "Veja RAM, CPU, plano de energia, permissao e perfil competitivo.",
+            "Configurações" => "Ajuste o fluxo seguro, backup e comportamento de UAC.",
+            _ => "Prepare o PC, revise o backup e aplique ajustes reversiveis."
+        };
+
+        SetNavState(NavOptimizeButton, isOptimize);
+        SetNavState(NavHistoryButton, isHistory);
+        SetNavState(NavSpecsButton, isSpecs);
+        SetNavState(NavSettingsButton, isSettings);
+    }
+
+    private void SetNavState(Button button, bool active)
+    {
+        button.Background = Brush(active ? Color.FromArgb(40, 52, 211, 153) : Colors.Transparent);
+        button.BorderBrush = Brush(active ? Color.FromArgb(100, 52, 211, 153) : Colors.Transparent);
+    }
+
+    private async Task ShowStartupOnboardingAsync()
+    {
+        var dialog = new ContentDialog
+        {
+            Title = "Bem-vindo ao Freitas Boost",
+            Content = BuildOnboardingDialogContent(),
+            PrimaryButtonText = "Comecar diagnostico",
+            SecondaryButtonText = "Ver specs",
+            CloseButtonText = "Agora nao",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = Content.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Secondary)
+        {
+            ShowPage("Specs do computador");
+            return;
+        }
+
+        ShowPage("Otimizar");
+    }
+
+    private static StackPanel BuildOnboardingDialogContent()
+    {
+        return new StackPanel
+        {
+            Spacing = 12,
+            MaxWidth = 560,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = "Ao entrar, o app identifica as configuracoes do aparelho, mostra o estado atual e prepara um fluxo com backup antes de qualquer ajuste sensivel.",
+                    Foreground = Brush(Colors.Gainsboro),
+                    TextWrapping = TextWrapping.Wrap
+                },
+                BuildOnboardingStep("1", "Identificar o PC", "RAM, CPU, plano de energia, permissao e historico local sao lidos automaticamente."),
+                BuildOnboardingStep("2", "Salvar rollback", "Antes de aplicar Boost, Modo FPS ou restauracoes, o backup aparece como opcao principal."),
+                BuildOnboardingStep("3", "Acompanhar execucao", "Cada etapa aparece no painel de aplicacao com progresso, resultado e erros visiveis.")
+            }
+        };
+    }
+
+    private static Border BuildOnboardingStep(string marker, string title, string description)
+    {
+        var grid = new Grid { ColumnSpacing = 10 };
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+        var badge = new Border
+        {
+            Width = 30,
+            Height = 30,
+            CornerRadius = new CornerRadius(8),
+            Background = Brush(Color.FromArgb(34, 52, 211, 153)),
+            BorderBrush = Brush(Color.FromArgb(85, 52, 211, 153)),
+            BorderThickness = new Thickness(1),
+            Child = new TextBlock
+            {
+                Text = marker,
+                Foreground = Brush(Colors.LightGreen),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
+            }
+        };
+
+        var text = new StackPanel { Spacing = 2 };
+        text.Children.Add(new TextBlock
+        {
+            Text = title,
+            Foreground = Brush(Colors.White),
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
+        });
+        text.Children.Add(new TextBlock
+        {
+            Text = description,
+            Foreground = Brush(Colors.DarkGray),
+            FontSize = 12,
+            TextWrapping = TextWrapping.Wrap
+        });
+
+        Grid.SetColumn(text, 1);
+        grid.Children.Add(badge);
+        grid.Children.Add(text);
+
+        return new Border
+        {
+            Background = Brush(Color.FromArgb(12, 255, 255, 255)),
+            BorderBrush = Brush(Color.FromArgb(35, 255, 255, 255)),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(10),
+            Child = grid
+        };
+    }
+
     private async void OnBoostAllClick(object sender, RoutedEventArgs e)
     {
-        if (!await ConfirmAsync("Boost agora", "Executar limpeza, otimizar RAM e ativar Modo FPS?"))
+        if (!await AskBackupBeforeApplyAsync("Boost agora", "Executar limpeza, otimizar RAM e ativar Modo FPS?"))
         {
             return;
         }
@@ -187,7 +341,7 @@ public sealed partial class MainWindow : Window
 
     private async void OnRestoreModeClick(object sender, RoutedEventArgs e)
     {
-        if (!await ConfirmAsync("Restaurar modo", "Restaurar o snapshot anterior do Modo FPS ou aplicar fallback seguro?"))
+        if (!await AskBackupBeforeApplyAsync("Restaurar modo", "Restaurar o snapshot anterior do Modo FPS ou aplicar fallback seguro?"))
         {
             return;
         }
@@ -237,7 +391,7 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        if (!await ConfirmAsync("Restaurar estado", $"Restaurar \"{selected.Label}\"?"))
+        if (!await AskBackupBeforeApplyAsync("Restaurar estado", $"Restaurar \"{selected.Label}\"?"))
         {
             return;
         }
@@ -276,11 +430,20 @@ public sealed partial class MainWindow : Window
     {
         await RunWithBusyAsync(Cs2Button, async () =>
         {
+            SetPanel("Perfil CS2", "GPU, plano de energia e recursos do Windows", "Analisando");
+            AddLog("run", "Perfil", "identificando configuracoes competitivas");
             var profile = await _cs2.AnalyzeAsync();
             Cs2Summary.Visibility = Visibility.Visible;
             Cs2Results.Visibility = Visibility.Visible;
             Cs2Summary.Text = $"GPU: {profile.GpuName} | CS2: {(profile.Cs2Detected ? "detectado" : "nao encontrado")} | Energia: {profile.PowerPlan} | Game DVR: {profile.GameDvr} | HAGS: {profile.Hags}";
             Cs2Results.ItemsSource = profile.Recommendations;
+            ReplaceLog(new[]
+            {
+                (profile.Cs2Detected ? "ok" : "info", "CS2", profile.Cs2Detected ? "instalacao detectada" : "nao localizado automaticamente"),
+                ("info", "GPU", profile.GpuName),
+                ("info", "Energia", profile.PowerPlan),
+                ("info", "Recomendacoes", $"{profile.Recommendations.Count} item(ns)")
+            });
         });
     }
 
@@ -343,7 +506,7 @@ public sealed partial class MainWindow : Window
 
     private async Task<FpsModeResult> RunFpsCoreAsync(bool showConfirmation, bool rethrow = false)
     {
-        if (showConfirmation && !await ConfirmAsync("Modo FPS", "Ativar Alto desempenho, Modo Jogo, Game DVR off e limpar cache DNS?"))
+        if (showConfirmation && !await AskBackupBeforeApplyAsync("Modo FPS", "Ativar Alto desempenho, Modo Jogo, Game DVR off e limpar cache DNS?"))
         {
             return new FpsModeResult();
         }
@@ -423,12 +586,21 @@ public sealed partial class MainWindow : Window
             RamBar.Value = info.UsedPct;
             CpuValue.Text = info.Cpu;
             PlanValue.Text = info.PowerPlan;
+            SpecsRamValue.Text = RamValue.Text;
+            SpecsRamBar.Value = info.UsedPct;
+            SpecsCpuValue.Text = info.Cpu;
+            SpecsPlanValue.Text = info.PowerPlan;
             RenderAdmin(info.IsAdmin);
+            RenderSystemScan(info);
         }
         catch (Exception ex)
         {
             _logger.Error("Falha ao carregar status do sistema.", ex);
             RamValue.Text = "indisponivel";
+            SpecsRamValue.Text = "indisponivel";
+            ScanRamText.Text = "leitura indisponivel";
+            ReadinessBadge.Text = "Revisar";
+            ReadinessBadge.Foreground = Brush(Colors.Goldenrod);
         }
     }
 
@@ -457,12 +629,58 @@ public sealed partial class MainWindow : Window
             ? $"{result.History.Items.Count} estado(s) salvos neste PC"
             : "Estados salvos neste PC";
         HistoryPath.Tag = result.Path;
+        SettingsBackupPath.Text = result.Path;
+        SpecsBackupValue.Text = result.History.Items.Count > 0
+            ? $"{result.History.Items.Count} backup(s) locais"
+            : "Nenhum backup local salvo";
+        RenderHistoryScan(result.History.Items.Count);
     }
 
     private void RenderAdmin(bool isAdmin)
     {
         AdminDot.Fill = Brush(isAdmin ? Colors.LightGreen : Colors.IndianRed);
         AdminLabel.Text = isAdmin ? "Administrador" : "Acoes sensiveis usam UAC";
+        SpecsAdminValue.Text = isAdmin ? "Administrador" : "UAC sob demanda";
+    }
+
+    private void BeginOnboardingScan()
+    {
+        OnboardingTitle.Text = "Preparando seu perfil";
+        OnboardingSubtitle.Text = "Identificando memoria, processador, energia e snapshots locais antes de aplicar ajustes.";
+        OnboardingRing.IsActive = true;
+        OnboardingProgress.Value = 18;
+        ReadinessBadge.Text = "Analisando";
+        ReadinessBadge.Foreground = Brush(Colors.LightSkyBlue);
+        ScanRamText.Text = "aguardando leitura";
+        ScanCpuText.Text = "identificando processador";
+        ScanPowerText.Text = "lendo plano ativo";
+        ScanHistoryText.Text = "procurando backups";
+    }
+
+    private void RenderSystemScan(SystemInfoResult info)
+    {
+        OnboardingProgress.Value = Math.Max(OnboardingProgress.Value, 72);
+        OnboardingTitle.Text = "Perfil do aparelho detectado";
+        OnboardingSubtitle.Text = "Memoria, CPU e energia foram lidas localmente. Revise o backup antes de aplicar ajustes.";
+        ReadinessBadge.Text = "Quase pronto";
+        ReadinessBadge.Foreground = Brush(Colors.LightSkyBlue);
+        ScanRamText.Text = $"{info.UsedPct}% em uso de {info.TotalMB / 1024d:0.0} GB";
+        ScanCpuText.Text = info.Cpu;
+        ScanPowerText.Text = info.PowerPlan;
+    }
+
+    private void RenderHistoryScan(int savedStates)
+    {
+        OnboardingProgress.Value = 100;
+        OnboardingRing.IsActive = false;
+        ReadinessBadge.Text = "Pronto";
+        ReadinessBadge.Foreground = Brush(Colors.LightGreen);
+        ScanHistoryText.Text = savedStates > 0
+            ? $"{savedStates} backup(s) locais"
+            : "sem backup salvo ainda";
+        BackupDefaultText.Text = savedStates > 0
+            ? "Acoes sensiveis vao sugerir um novo snapshot antes de alterar configuracoes."
+            : "Antes do primeiro ajuste sensivel, o app vai sugerir salvar um snapshot para rollback.";
     }
 
     private void SetPanel(string title, string subtitle, string state)
@@ -470,6 +688,7 @@ public sealed partial class MainWindow : Window
         ActionPanelTitle.Text = title;
         ActionPanelSubtitle.Text = subtitle;
         ActionPanelState.Text = state;
+        SetActionProgress(true);
     }
 
     private void ReplaceLog(IEnumerable<(string State, string Label, string Value)> rows)
@@ -480,6 +699,13 @@ public sealed partial class MainWindow : Window
             AddLog(row.State, row.Label, row.Value);
         }
         ActionPanelState.Text = rows.Any(row => row.State == "warn") ? "Revisar" : "Aplicado";
+        SetActionProgress(false);
+    }
+
+    private void SetActionProgress(bool isRunning)
+    {
+        ActionProgressBar.Visibility = isRunning ? Visibility.Visible : Visibility.Collapsed;
+        ActionProgressBar.IsIndeterminate = isRunning;
     }
 
     private void AddLog(string state, string label, string value)
@@ -554,6 +780,7 @@ public sealed partial class MainWindow : Window
         finally
         {
             button.IsEnabled = true;
+            SetActionProgress(false);
         }
     }
 
@@ -579,6 +806,53 @@ public sealed partial class MainWindow : Window
         };
 
         return await dialog.ShowAsync() == ContentDialogResult.Primary;
+    }
+
+    private async Task<bool> AskBackupBeforeApplyAsync(string title, string message)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = title,
+            Content = $"{message}\n\nRecomendado: salve um backup do estado atual antes de alterar configuracoes do Windows. Assim voce pode restaurar o plano de energia, Game Mode e Game DVR depois.",
+            PrimaryButtonText = "Salvar backup e continuar",
+            SecondaryButtonText = "Continuar sem backup",
+            CloseButtonText = "Cancelar",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = Content.XamlRoot
+        };
+
+        var choice = await dialog.ShowAsync();
+        if (choice == ContentDialogResult.Primary)
+        {
+            return await SavePreActionBackupAsync(title);
+        }
+
+        return choice == ContentDialogResult.Secondary;
+    }
+
+    private async Task<bool> SavePreActionBackupAsync(string actionName)
+    {
+        try
+        {
+            SetPanel("Backup local", "Snapshot antes de aplicar ajustes", "Salvando");
+            AddLog("run", "Backup", $"salvando estado antes de {actionName}");
+            var result = await _history.CaptureAndSaveAsync($"Antes de {actionName}", "pre-action");
+            RenderHistory(result);
+            ReplaceLog(new[]
+            {
+                ("ok", "Backup salvo", result.Item?.Label ?? "Estado atual"),
+                ("info", "Plano", result.Item?.PowerPlanName ?? "desconhecido"),
+                ("info", "Arquivo", result.Path)
+            });
+            ShowStatus("Backup salvo", "Snapshot local criado. O ajuste pode continuar.", InfoBarSeverity.Success);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.Error("Falha ao salvar backup antes da acao.", ex);
+            ShowStatus("Backup nao salvo", ex.Message, InfoBarSeverity.Error);
+            return await ConfirmAsync("Continuar sem backup?", "Nao foi possivel salvar o snapshot. Continuar mesmo assim?");
+        }
     }
 
     private void ShowStatus(string title, string message, InfoBarSeverity severity)
