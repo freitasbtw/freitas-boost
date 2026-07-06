@@ -87,7 +87,7 @@
 
                 <StackPanel Grid.Row="2" Spacing="6">
                     <TextBlock Text="v0.1.0 native" Foreground="{StaticResource FaintBrush}" FontFamily="Cascadia Mono" FontSize="11" />
-                    <TextBlock Text="Electron legado preservado" Foreground="{StaticResource FaintBrush}" FontSize="11" />
+                    <TextBlock Text="Windows nativo" Foreground="{StaticResource FaintBrush}" FontSize="11" />
                 </StackPanel>
             </Grid>
         </Border>

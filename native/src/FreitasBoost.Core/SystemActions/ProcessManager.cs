@@ -14,7 +14,7 @@ public sealed class ProcessManager
         "StartMenuExperienceHost", "sihost", "ctfmon", "RuntimeBroker", "dllhost",
         "conhost", "WmiPrvSE", "audiodg", "taskhostw", "SecurityHealthService",
         "SecurityHealthSystray", "MsMpEng", "NisSrv", "powershell", "pwsh",
-        "electron", "Freitas Boost", "freitas-boost", "FreitasBoost.App",
+        "Freitas Boost", "freitas-boost", "FreitasBoost.App",
         "FreitasBoost.AdminHelper", "TextInputHost", "LockApp", "wlanext",
         "WUDFHost", "steam", "steamwebhelper", "cs2"
     };
@@ -146,4 +146,3 @@ public sealed class ProcessManager
         return Task.FromResult(result);
     }
 }
-
