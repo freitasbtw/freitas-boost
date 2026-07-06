@@ -1,0 +1,40 @@
+{
+  "name": "freitas-boost",
+  "version": "0.1.0",
+  "description": "Otimizador de PC focado em ganhar FPS em jogos: limpa temporarios, libera RAM, encerra processos e ativa o Modo FPS.",
+  "main": "src/main/main.js",
+  "author": "Gabriel Freitas",
+  "license": "MIT",
+  "scripts": {
+    "start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-admin.ps1",
+    "start:dev": "electron .",
+    "dist": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.freitas.boost",
+    "productName": "Freitas Boost",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "**/scripts/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "requestedExecutionLevel": "requireAdministrator"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": true
+    }
+  }
+}

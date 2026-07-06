@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.log
+.dotnet/
+native/**/bin/
+native/**/obj/
+native/**/.vs/
+native/.nuget-packages/

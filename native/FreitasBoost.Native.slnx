@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FreitasBoost.AdminHelper/FreitasBoost.AdminHelper.csproj" />
+    <Project Path="src/FreitasBoost.App/FreitasBoost.App.csproj" />
+    <Project Path="src/FreitasBoost.Core/FreitasBoost.Core.csproj" />
+  </Folder>
+</Solution>
