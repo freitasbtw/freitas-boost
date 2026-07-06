@@ -21,6 +21,10 @@
     <ProjectReference Include="..\FreitasBoost.AdminHelper\FreitasBoost.AdminHelper.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Assets\freitas-boost-logo.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <Target Name="CopyAdminHelper" AfterTargets="Build">
     <ItemGroup>
       <AdminHelperFiles Include="$(MSBuildThisFileDirectory)..\FreitasBoost.AdminHelper\bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\**\*" />

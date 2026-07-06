@@ -8,19 +8,20 @@
         <MicaBackdrop Kind="Base" />
     </Window.SystemBackdrop>
 
-    <Grid Background="#0B0C0E" ColumnDefinitions="236,*">
+    <Grid Background="#050B16">
+        <Grid x:Name="AppShell" ColumnDefinitions="236,*" Visibility="Collapsed">
         <Grid.Resources>
-            <SolidColorBrush x:Key="SurfaceBrush" Color="#131518" />
-            <SolidColorBrush x:Key="Surface2Brush" Color="#181B1F" />
-            <SolidColorBrush x:Key="Surface3Brush" Color="#0F1114" />
-            <SolidColorBrush x:Key="BorderBrushSoft" Color="#22FFFFFF" />
-            <SolidColorBrush x:Key="TextBrush" Color="#E8EAED" />
-            <SolidColorBrush x:Key="MutedBrush" Color="#888F98" />
-            <SolidColorBrush x:Key="FaintBrush" Color="#5B626B" />
-            <SolidColorBrush x:Key="AccentBrush" Color="#34D399" />
-            <SolidColorBrush x:Key="InfoBrush" Color="#7DD3FC" />
+            <SolidColorBrush x:Key="SurfaceBrush" Color="#0B1730" />
+            <SolidColorBrush x:Key="Surface2Brush" Color="#10213D" />
+            <SolidColorBrush x:Key="Surface3Brush" Color="#071225" />
+            <SolidColorBrush x:Key="BorderBrushSoft" Color="#334A67" />
+            <SolidColorBrush x:Key="TextBrush" Color="#EAF2FF" />
+            <SolidColorBrush x:Key="MutedBrush" Color="#9AA8BD" />
+            <SolidColorBrush x:Key="FaintBrush" Color="#60728C" />
+            <SolidColorBrush x:Key="AccentBrush" Color="#38BDF8" />
+            <SolidColorBrush x:Key="InfoBrush" Color="#60A5FA" />
             <SolidColorBrush x:Key="WarningBrush" Color="#FBBF24" />
-            <SolidColorBrush x:Key="DangerBrush" Color="#F0746A" />
+            <SolidColorBrush x:Key="DangerBrush" Color="#FB7185" />
 
             <Style TargetType="TextBlock">
                 <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
@@ -33,12 +34,12 @@
             </Style>
         </Grid.Resources>
 
-        <Border Background="#101216" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,1,0" Padding="18,22">
+        <Border Background="#061226" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,1,0" Padding="18,22">
             <Grid RowDefinitions="Auto,*,Auto">
                 <StackPanel Spacing="14">
                     <StackPanel Orientation="Horizontal" Spacing="12">
-                        <Border Width="42" Height="42" CornerRadius="10" Background="#2434D399" BorderBrush="#5534D399" BorderThickness="1">
-                            <FontIcon Glyph="&#xE945;" Foreground="{StaticResource AccentBrush}" FontSize="20" />
+                        <Border Width="42" Height="42" CornerRadius="10" Background="#10213D" BorderBrush="#334A67" BorderThickness="1" Padding="4">
+                            <Image Source="ms-appx:///Assets/freitas-boost-logo.png" Stretch="Uniform" />
                         </Border>
                         <StackPanel>
                             <TextBlock FontSize="18" FontWeight="SemiBold">
@@ -58,28 +59,28 @@
                 </StackPanel>
 
                 <StackPanel Grid.Row="1" Spacing="8" Margin="0,30,0,0">
-                    <Button x:Name="NavOptimizeButton" Tag="Otimizar" Click="OnNavClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderBrush="Transparent">
+                    <Button x:Name="NavOptimizeButton" Tag="Optimize" Click="OnNavClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderBrush="Transparent">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <FontIcon Glyph="&#xE950;" FontSize="16" Foreground="{StaticResource AccentBrush}" />
                             <TextBlock Text="Otimizar" FontWeight="SemiBold" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="NavHistoryButton" Tag="Histórico" Click="OnNavClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderBrush="Transparent">
+                    <Button x:Name="NavHistoryButton" Tag="History" Click="OnNavClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderBrush="Transparent">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <FontIcon Glyph="&#xE81C;" FontSize="16" Foreground="{StaticResource InfoBrush}" />
-                            <TextBlock Text="Histórico" FontWeight="SemiBold" />
+                            <TextBlock Text="Hist&#x00F3;rico" FontWeight="SemiBold" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="NavSpecsButton" Tag="Specs do computador" Click="OnNavClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderBrush="Transparent">
+                    <Button x:Name="NavSpecsButton" Tag="Specs" Click="OnNavClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderBrush="Transparent">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <FontIcon Glyph="&#xE964;" FontSize="16" Foreground="{StaticResource WarningBrush}" />
                             <TextBlock Text="Specs do computador" FontWeight="SemiBold" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="NavSettingsButton" Tag="Configurações" Click="OnNavClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderBrush="Transparent">
+                    <Button x:Name="NavSettingsButton" Tag="Settings" Click="OnNavClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderBrush="Transparent">
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <FontIcon Glyph="&#xE713;" FontSize="16" Foreground="{StaticResource FaintBrush}" />
-                            <TextBlock Text="Configurações" FontWeight="SemiBold" />
+                            <TextBlock Text="Configura&#x00E7;&#x00F5;es" FontWeight="SemiBold" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -92,12 +93,11 @@
         </Border>
 
         <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*">
-            <Grid Padding="24,22,24,12" ColumnDefinitions="*,Auto">
+            <Grid Padding="24,22,24,12" ColumnDefinitions="*">
                 <StackPanel>
                     <TextBlock x:Name="PageTitle" Text="Otimizar" FontSize="22" FontWeight="SemiBold" />
                     <TextBlock x:Name="PageSubtitle" Text="Prepare o PC, revise o backup e aplique ajustes reversiveis." Foreground="{StaticResource MutedBrush}" FontSize="12" />
                 </StackPanel>
-                <Button Grid.Column="1" Content="Ver onboarding" Click="OnShowOnboardingClick" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" />
             </Grid>
 
             <InfoBar
@@ -137,7 +137,7 @@
 
                                     <StackPanel Spacing="12">
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                            <Border Width="42" Height="42" CornerRadius="10" Background="#2234D399" BorderBrush="#5534D399" BorderThickness="1">
+                                            <Border Width="42" Height="42" CornerRadius="10" Background="#2238BDF8" BorderBrush="#5538BDF8" BorderThickness="1">
                                                 <ProgressRing x:Name="OnboardingRing" IsActive="True" Width="24" Height="24" Foreground="{StaticResource AccentBrush}" />
                                             </Border>
                                             <StackPanel Grid.Column="1">
@@ -245,7 +245,7 @@
                                         <TextBlock Text="Boost competitivo" FontSize="18" FontWeight="SemiBold" />
                                         <TextBlock Text="Aplica ajustes reversiveis e preserva o que pode causar stutter antes da partida." Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" />
                                     </StackPanel>
-                                    <Button x:Name="BoostAllButton" Grid.Column="1" Content="Boost agora" Click="OnBoostAllClick" Background="{StaticResource AccentBrush}" Foreground="#05140D" Padding="26,12" />
+                                    <Button x:Name="BoostAllButton" Grid.Column="1" Content="Boost agora" Click="OnBoostAllClick" Background="{StaticResource AccentBrush}" Foreground="#03111F" Padding="26,12" />
                                 </Grid>
                             </Border>
 
@@ -487,14 +487,14 @@
                         <StackPanel x:Name="SettingsPage" Spacing="14" Visibility="Collapsed">
                             <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="18">
                                 <StackPanel>
-                                    <TextBlock Text="Configurações" FontSize="18" FontWeight="SemiBold" />
+                                    <TextBlock Text="Configura&#x00E7;&#x00F5;es" FontSize="18" FontWeight="SemiBold" />
                                     <TextBlock Text="Preferencias de seguranca, rollback e execucao elevada." Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" />
                                 </StackPanel>
                             </Border>
 
                             <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="16">
                                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                    <Border Width="36" Height="36" CornerRadius="8" Background="#2234D399" BorderBrush="#5534D399" BorderThickness="1">
+                                    <Border Width="36" Height="36" CornerRadius="8" Background="#2238BDF8" BorderBrush="#5538BDF8" BorderThickness="1">
                                         <FontIcon Glyph="&#xE72E;" Foreground="{StaticResource AccentBrush}" FontSize="16" />
                                     </Border>
                                     <StackPanel Grid.Column="1">
@@ -524,8 +524,8 @@
                                         <FontIcon Glyph="&#xE946;" Foreground="{StaticResource InfoBrush}" FontSize="16" />
                                     </Border>
                                     <StackPanel Grid.Column="1">
-                                        <TextBlock Text="Onboarding" FontWeight="SemiBold" />
-                                        <TextBlock Text="Revise o fluxo inicial com diagnostico do PC, backup e etapas de aplicacao." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                        <TextBlock Text="Tela inicial" FontWeight="SemiBold" />
+                                        <TextBlock Text="Reabre a entrada minimalista com o logo e o botao de acesso." Foreground="{StaticResource MutedBrush}" FontSize="12" />
                                     </StackPanel>
                                     <Button Grid.Column="2" Content="Abrir" Click="OnShowOnboardingClick" />
                                 </Grid>
@@ -561,6 +561,30 @@
                     </StackPanel>
                 </Grid>
             </ScrollViewer>
+        </Grid>
+        </Grid>
+
+        <Grid x:Name="OnboardingScreen" Canvas.ZIndex="10" Background="#050B16">
+            <Grid.Resources>
+                <SolidColorBrush x:Key="OnboardingTextBrush" Color="#EAF2FF" />
+                <SolidColorBrush x:Key="OnboardingAccentBrush" Color="#38BDF8" />
+            </Grid.Resources>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="30">
+                <Border Width="220" Height="220" CornerRadius="44" Background="#071225" BorderBrush="#334A67" BorderThickness="1" Padding="18">
+                    <Image Source="ms-appx:///Assets/freitas-boost-logo.png" Stretch="Uniform" />
+                </Border>
+                <Button
+                    x:Name="EnterAppButton"
+                    Content="Entrar"
+                    Click="OnEnterAppClick"
+                    HorizontalAlignment="Center"
+                    MinWidth="170"
+                    Padding="28,12"
+                    Background="{StaticResource OnboardingAccentBrush}"
+                    Foreground="#03111F"
+                    FontSize="16"
+                    FontWeight="SemiBold" />
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>

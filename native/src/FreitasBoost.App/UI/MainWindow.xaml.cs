@@ -23,7 +23,6 @@ public sealed partial class MainWindow : Window
     private readonly StateHistoryStore _history;
     private readonly Cs2ProfileAnalyzer _cs2 = new();
     private readonly DispatcherTimer _refreshTimer = new();
-    private bool _startupOnboardingShown;
 
     private readonly ObservableCollection<ProcessCandidateView> _processItems = [];
     private readonly ObservableCollection<StateSnapshotView> _stateItems = [];
@@ -42,7 +41,7 @@ public sealed partial class MainWindow : Window
         StateHistoryList.ItemsSource = _stateItems;
         BeginOnboardingScan();
         SetActionProgress(false);
-        ShowPage("Otimizar");
+        ShowPage("Optimize");
         AddLog("info", "Status", "Aguardando uma otimizacao");
 
         _refreshTimer.Interval = TimeSpan.FromSeconds(5);
@@ -53,12 +52,6 @@ public sealed partial class MainWindow : Window
             await LoadSystemInfoAsync();
             await LoadStateHistoryAsync();
             _refreshTimer.Start();
-            if (!_startupOnboardingShown)
-            {
-                _startupOnboardingShown = true;
-                await Task.Delay(250);
-                await ShowStartupOnboardingAsync();
-            }
         };
     }
 
@@ -81,29 +74,53 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private async void OnShowOnboardingClick(object sender, RoutedEventArgs e)
+    private void OnShowOnboardingClick(object sender, RoutedEventArgs e)
     {
-        await ShowStartupOnboardingAsync();
+        ShowEntryScreen();
+    }
+
+    private void OnEnterAppClick(object sender, RoutedEventArgs e)
+    {
+        EnterApp();
+    }
+
+    private void EnterApp()
+    {
+        OnboardingScreen.Visibility = Visibility.Collapsed;
+        AppShell.Visibility = Visibility.Visible;
+        ShowPage("Optimize");
+    }
+
+    private void ShowEntryScreen()
+    {
+        AppShell.Visibility = Visibility.Collapsed;
+        OnboardingScreen.Visibility = Visibility.Visible;
     }
 
     private void ShowPage(string page)
     {
-        var isOptimize = string.Equals(page, "Otimizar", StringComparison.OrdinalIgnoreCase);
-        var isHistory = string.Equals(page, "Histórico", StringComparison.OrdinalIgnoreCase);
-        var isSpecs = string.Equals(page, "Specs do computador", StringComparison.OrdinalIgnoreCase);
-        var isSettings = string.Equals(page, "Configurações", StringComparison.OrdinalIgnoreCase);
+        var isOptimize = string.Equals(page, "Optimize", StringComparison.OrdinalIgnoreCase);
+        var isHistory = string.Equals(page, "History", StringComparison.OrdinalIgnoreCase);
+        var isSpecs = string.Equals(page, "Specs", StringComparison.OrdinalIgnoreCase);
+        var isSettings = string.Equals(page, "Settings", StringComparison.OrdinalIgnoreCase);
 
         OptimizePage.Visibility = isOptimize ? Visibility.Visible : Visibility.Collapsed;
         HistoryPage.Visibility = isHistory ? Visibility.Visible : Visibility.Collapsed;
         SpecsPage.Visibility = isSpecs ? Visibility.Visible : Visibility.Collapsed;
         SettingsPage.Visibility = isSettings ? Visibility.Visible : Visibility.Collapsed;
 
-        PageTitle.Text = page;
+        PageTitle.Text = page switch
+        {
+            "History" => "Hist\u00F3rico",
+            "Specs" => "Specs do computador",
+            "Settings" => "Configura\u00E7\u00F5es",
+            _ => "Otimizar"
+        };
         PageSubtitle.Text = page switch
         {
-            "Histórico" => "Gerencie snapshots locais e restaure configuracoes com rollback.",
-            "Specs do computador" => "Veja RAM, CPU, plano de energia, permissao e perfil competitivo.",
-            "Configurações" => "Ajuste o fluxo seguro, backup e comportamento de UAC.",
+            "History" => "Gerencie snapshots locais e restaure configuracoes com rollback.",
+            "Specs" => "Veja RAM, CPU, plano de energia, permissao e perfil competitivo.",
+            "Settings" => "Ajuste o fluxo seguro, backup e comportamento de UAC.",
             _ => "Prepare o PC, revise o backup e aplique ajustes reversiveis."
         };
 
@@ -115,106 +132,8 @@ public sealed partial class MainWindow : Window
 
     private void SetNavState(Button button, bool active)
     {
-        button.Background = Brush(active ? Color.FromArgb(40, 52, 211, 153) : Colors.Transparent);
-        button.BorderBrush = Brush(active ? Color.FromArgb(100, 52, 211, 153) : Colors.Transparent);
-    }
-
-    private async Task ShowStartupOnboardingAsync()
-    {
-        var dialog = new ContentDialog
-        {
-            Title = "Bem-vindo ao Freitas Boost",
-            Content = BuildOnboardingDialogContent(),
-            PrimaryButtonText = "Comecar diagnostico",
-            SecondaryButtonText = "Ver specs",
-            CloseButtonText = "Agora nao",
-            DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = Content.XamlRoot
-        };
-
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Secondary)
-        {
-            ShowPage("Specs do computador");
-            return;
-        }
-
-        ShowPage("Otimizar");
-    }
-
-    private static StackPanel BuildOnboardingDialogContent()
-    {
-        return new StackPanel
-        {
-            Spacing = 12,
-            MaxWidth = 560,
-            Children =
-            {
-                new TextBlock
-                {
-                    Text = "Ao entrar, o app identifica as configuracoes do aparelho, mostra o estado atual e prepara um fluxo com backup antes de qualquer ajuste sensivel.",
-                    Foreground = Brush(Colors.Gainsboro),
-                    TextWrapping = TextWrapping.Wrap
-                },
-                BuildOnboardingStep("1", "Identificar o PC", "RAM, CPU, plano de energia, permissao e historico local sao lidos automaticamente."),
-                BuildOnboardingStep("2", "Salvar rollback", "Antes de aplicar Boost, Modo FPS ou restauracoes, o backup aparece como opcao principal."),
-                BuildOnboardingStep("3", "Acompanhar execucao", "Cada etapa aparece no painel de aplicacao com progresso, resultado e erros visiveis.")
-            }
-        };
-    }
-
-    private static Border BuildOnboardingStep(string marker, string title, string description)
-    {
-        var grid = new Grid { ColumnSpacing = 10 };
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-
-        var badge = new Border
-        {
-            Width = 30,
-            Height = 30,
-            CornerRadius = new CornerRadius(8),
-            Background = Brush(Color.FromArgb(34, 52, 211, 153)),
-            BorderBrush = Brush(Color.FromArgb(85, 52, 211, 153)),
-            BorderThickness = new Thickness(1),
-            Child = new TextBlock
-            {
-                Text = marker,
-                Foreground = Brush(Colors.LightGreen),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
-            }
-        };
-
-        var text = new StackPanel { Spacing = 2 };
-        text.Children.Add(new TextBlock
-        {
-            Text = title,
-            Foreground = Brush(Colors.White),
-            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
-        });
-        text.Children.Add(new TextBlock
-        {
-            Text = description,
-            Foreground = Brush(Colors.DarkGray),
-            FontSize = 12,
-            TextWrapping = TextWrapping.Wrap
-        });
-
-        Grid.SetColumn(text, 1);
-        grid.Children.Add(badge);
-        grid.Children.Add(text);
-
-        return new Border
-        {
-            Background = Brush(Color.FromArgb(12, 255, 255, 255)),
-            BorderBrush = Brush(Color.FromArgb(35, 255, 255, 255)),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(8),
-            Padding = new Thickness(10),
-            Child = grid
-        };
+        button.Background = Brush(active ? Color.FromArgb(40, 56, 189, 248) : Colors.Transparent);
+        button.BorderBrush = Brush(active ? Color.FromArgb(100, 56, 189, 248) : Colors.Transparent);
     }
 
     private async void OnBoostAllClick(object sender, RoutedEventArgs e)
