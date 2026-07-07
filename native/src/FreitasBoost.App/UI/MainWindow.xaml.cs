@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Text.Json;
 using FreitasBoost.App.Models;
 using FreitasBoost.App.Services;
 using FreitasBoost.Core.Models;
@@ -9,6 +10,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 
 namespace FreitasBoost.App.UI;
@@ -21,11 +23,19 @@ public sealed partial class MainWindow : Window
     private readonly MemoryOptimizer _memory;
     private readonly ProcessManager _processes;
     private readonly StateHistoryStore _history;
+    private readonly TempCleaner _cleanPreview;
+    private readonly AppSettingsStore _settingsStore;
+    private readonly DiagnosticReportService _diagnostics;
     private readonly Cs2ProfileAnalyzer _cs2 = new();
     private readonly DispatcherTimer _refreshTimer = new();
 
     private readonly ObservableCollection<ProcessCandidateView> _processItems = [];
     private readonly ObservableCollection<StateSnapshotView> _stateItems = [];
+    private AppSettings _settings = new();
+    private SystemInfoResult? _lastSystemInfo;
+    private StateHistoryResult? _lastHistory;
+    private Cs2ProfileResult? _lastCs2Profile;
+    private bool _settingsLoaded;
 
     public MainWindow()
     {
@@ -35,6 +45,9 @@ public sealed partial class MainWindow : Window
         _memory = new MemoryOptimizer(_logger);
         _processes = new ProcessManager(_logger);
         _history = new StateHistoryStore(_logger);
+        _cleanPreview = new TempCleaner(_logger);
+        _settingsStore = new AppSettingsStore(_logger);
+        _diagnostics = new DiagnosticReportService(_logger);
 
         ExtendsContentIntoTitleBar = true;
         ProcessList.ItemsSource = _processItems;
@@ -49,6 +62,11 @@ public sealed partial class MainWindow : Window
 
         Activated += async (_, _) =>
         {
+            if (!_settingsLoaded)
+            {
+                await LoadSettingsAsync();
+            }
+
             await LoadSystemInfoAsync();
             await LoadStateHistoryAsync();
             _refreshTimer.Start();
@@ -79,8 +97,59 @@ public sealed partial class MainWindow : Window
         ShowEntryScreen();
     }
 
-    private void OnEnterAppClick(object sender, RoutedEventArgs e)
+    private async void OnOnboardingSaveBackupClick(object sender, RoutedEventArgs e)
     {
+        await RunWithBusyAsync(OnboardingBackupButton, async () =>
+        {
+            var result = await _history.CaptureAndSaveAsync("Primeiro backup", "onboarding");
+            RenderHistory(result);
+            ShowStatus("Backup salvo", "Snapshot inicial criado para rollback.", InfoBarSeverity.Success);
+        });
+    }
+
+    private async void OnSaveSettingsClick(object sender, RoutedEventArgs e)
+    {
+        await SaveSettingsFromUiAsync();
+        ShowStatus("Configuracoes salvas", "Preferencias aplicadas ao fluxo do app.", InfoBarSeverity.Success);
+    }
+
+    private void OnCleanModeToggled(object sender, RoutedEventArgs e)
+    {
+        RenderCleanPreviewHint();
+    }
+
+    private async void OnPreviewCleanClick(object sender, RoutedEventArgs e)
+    {
+        await RunWithBusyAsync(CleanPreviewButton, async () =>
+        {
+            var preview = await _cleanPreview.PreviewAsync(BuildCleanOptions());
+            CleanPreviewText.Text = FormatCleanPreview(preview);
+            ReplaceLog(new[]
+            {
+                ("info", "Preview", $"{preview.FilesRemoved} arquivo(s), {preview.FreedMB:0.#} MB"),
+                ("info", "Modo", preview.DeepClean ? "profundo" : "seguro")
+            }.Concat(preview.Details.Take(4).Select(item => ("info", "Alvo", $"{item.Path}: {item.FreedMB:0.#} MB"))));
+        });
+    }
+
+    private async void OnCopyDiagnosticClick(object sender, RoutedEventArgs e)
+    {
+        await RunWithBusyAsync(CopyDiagnosticButton, async () =>
+        {
+            var report = await _diagnostics.BuildAsync(
+                _settings,
+                _lastSystemInfo,
+                _lastHistory,
+                _lastCs2Profile,
+                _settingsStore.SettingsPath);
+            CopyTextToClipboard(report);
+            ShowStatus("Diagnostico copiado", "Relatorio tecnico copiado para a area de transferencia.", InfoBarSeverity.Success);
+        });
+    }
+
+    private async void OnEnterAppClick(object sender, RoutedEventArgs e)
+    {
+        await SaveOnboardingChoicesAsync();
         EnterApp();
     }
 
@@ -95,6 +164,60 @@ public sealed partial class MainWindow : Window
     {
         AppShell.Visibility = Visibility.Collapsed;
         OnboardingScreen.Visibility = Visibility.Visible;
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        _settings = await _settingsStore.LoadAsync();
+        _settingsLoaded = true;
+        ApplySettingsToUi();
+
+        if (_settings.SkipOnboarding)
+        {
+            EnterApp();
+        }
+        else
+        {
+            ShowEntryScreen();
+        }
+    }
+
+    private void ApplySettingsToUi()
+    {
+        RequireBackupToggle.IsOn = _settings.RequireBackupBeforeSensitiveAction;
+        DeepCleanDefaultToggle.IsOn = _settings.DeepCleanByDefault;
+        SkipOnboardingToggle.IsOn = _settings.SkipOnboarding;
+        CleanDeepToggle.IsOn = _settings.DeepCleanByDefault;
+        NeverKillTextBox.Text = AppSettingsStore.FormatProcessList(_settings.NeverKillProcesses);
+        SuggestedKillTextBox.Text = AppSettingsStore.FormatProcessList(_settings.SuggestedKillProcesses);
+        SelectComboItem(SettingsProfileCombo, _settings.PerformanceProfile);
+        SelectComboItem(OnboardingProfileCombo, _settings.PerformanceProfile);
+        OnboardingBackupToggle.IsOn = _settings.RequireBackupBeforeSensitiveAction;
+        OnboardingDeepCleanToggle.IsOn = _settings.DeepCleanByDefault;
+        OnboardingSkipToggle.IsOn = _settings.SkipOnboarding || !_settingsLoaded;
+        RenderCleanPreviewHint();
+    }
+
+    private async Task SaveOnboardingChoicesAsync()
+    {
+        _settings.PerformanceProfile = GetComboText(OnboardingProfileCombo, _settings.PerformanceProfile);
+        _settings.RequireBackupBeforeSensitiveAction = OnboardingBackupToggle.IsOn;
+        _settings.DeepCleanByDefault = OnboardingDeepCleanToggle.IsOn;
+        _settings.SkipOnboarding = OnboardingSkipToggle.IsOn;
+        await _settingsStore.SaveAsync(_settings);
+        ApplySettingsToUi();
+    }
+
+    private async Task SaveSettingsFromUiAsync()
+    {
+        _settings.RequireBackupBeforeSensitiveAction = RequireBackupToggle.IsOn;
+        _settings.DeepCleanByDefault = DeepCleanDefaultToggle.IsOn;
+        _settings.SkipOnboarding = SkipOnboardingToggle.IsOn;
+        _settings.PerformanceProfile = GetComboText(SettingsProfileCombo, _settings.PerformanceProfile);
+        _settings.NeverKillProcesses = AppSettingsStore.ParseProcessList(NeverKillTextBox.Text);
+        _settings.SuggestedKillProcesses = AppSettingsStore.ParseProcessList(SuggestedKillTextBox.Text);
+        await _settingsStore.SaveAsync(_settings);
+        ApplySettingsToUi();
     }
 
     private void ShowPage(string page)
@@ -145,58 +268,39 @@ public sealed partial class MainWindow : Window
 
         await RunWithBusyAsync(BoostAllButton, async () =>
         {
+            SetPanel("Boost competitivo", "Limpeza, RAM e Modo FPS em uma unica elevacao", "Aplicando");
             BoostTimeline.Visibility = Visibility.Visible;
             BoostSummary.Visibility = Visibility.Visible;
+            BoostMetricsPanel.Visibility = Visibility.Collapsed;
             BoostSummary.Text = "Executando boost completo...";
             StepClean.Text = StepRam.Text = StepFps.Text = "Aguardando";
 
-            var totalFreed = 0d;
-            var fpsApplied = 0;
-            var errors = new List<string>();
+            StepClean.Text = CleanDeepToggle.IsOn ? "Limpeza profunda em andamento" : "Limpeza segura em andamento";
+            StepRam.Text = "Revisando working set";
+            StepFps.Text = "Aplicando ajustes reversiveis";
 
-            try
-            {
-                StepClean.Text = "Limpando temporarios seguros";
-                var clean = await RunCleanCoreAsync(showConfirmation: false, rethrow: true);
-                totalFreed += clean.FreedMB;
-                StepClean.Text = $"{clean.FreedMB:0.#} MB liberados";
-            }
-            catch
-            {
-                errors.Add("limpeza");
-                StepClean.Text = "Falha na limpeza";
-            }
+            var result = await _admin.RunAsync<BoostAllResult>("boost-all", new BoostAllOptions { Clean = BuildCleanOptions() });
+            StepClean.Text = $"{result.Clean.FreedMB:0.#} MB em {result.Clean.FilesRemoved} arquivo(s)";
+            StepRam.Text = $"{result.Memory.FreedMB} MB liberados";
+            StepFps.Text = $"{result.Fps.Applied.Count} ajuste(s)";
 
-            try
-            {
-                StepRam.Text = "Revisando working set";
-                var ram = await RunRamCoreAsync(rethrow: true);
-                totalFreed += ram.FreedMB;
-                StepRam.Text = $"{ram.FreedMB} MB liberados";
-            }
-            catch
-            {
-                errors.Add("RAM");
-                StepRam.Text = "Falha na RAM";
-            }
+            BoostSummary.Foreground = Brush(result.Warnings.Count > 0 ? Colors.Goldenrod : Colors.LightGreen);
+            BoostSummary.Text = result.Warnings.Count > 0
+                ? $"Boost concluido com avisos: {string.Join(", ", result.Warnings)}."
+                : "Boost concluido com uma unica elevacao.";
+            BoostMetricsPanel.Visibility = Visibility.Visible;
+            BoostMetricsText.Text = FormatBoostMetrics(result);
 
-            try
+            ReplaceLog(new[]
             {
-                StepFps.Text = "Aplicando ajustes reversiveis";
-                var fps = await RunFpsCoreAsync(showConfirmation: false, rethrow: true);
-                fpsApplied = fps.Applied.Count;
-                StepFps.Text = $"{fpsApplied} ajuste(s)";
-            }
-            catch
-            {
-                errors.Add("Modo FPS");
-                StepFps.Text = "Falha no Modo FPS";
-            }
+                ("ok", "Limpeza", $"{result.Clean.FreedMB:0.#} MB em {result.Clean.FilesRemoved} arquivo(s)"),
+                ("ok", "RAM", $"{FormatMemory(result.Memory.BeforeUsedMB)} -> {FormatMemory(result.Memory.AfterUsedMB)}"),
+                ("ok", "Modo FPS", $"{result.Fps.Applied.Count} ajuste(s)"),
+                ("info", "Energia", $"{result.Before.PowerPlan} -> {result.After.PowerPlan}")
+            }.Concat(result.Warnings.Select(item => ("warn", "Aviso", item))));
 
-            BoostSummary.Foreground = Brush(errors.Count > 0 ? Colors.IndianRed : Colors.LightGreen);
-            BoostSummary.Text = errors.Count > 0
-                ? $"Boost concluido com avisos em: {string.Join(", ", errors)}."
-                : $"Boost concluido. {totalFreed:0.#} MB liberados e {fpsApplied} ajustes reversiveis aplicados.";
+            await LoadSystemInfoAsync();
+            await LoadStateHistoryAsync();
         });
     }
 
@@ -218,7 +322,7 @@ public sealed partial class MainWindow : Window
     private async void OnKillSelectedClick(object sender, RoutedEventArgs e)
     {
         var selected = _processItems
-            .Where(item => item.IsSelected)
+            .Where(item => item.IsSelected && !item.IsLocked)
             .Select(item => new KillProcessItem { Name = item.Name, Pids = item.Pids })
             .ToList();
 
@@ -345,6 +449,73 @@ public sealed partial class MainWindow : Window
         });
     }
 
+    private void OnStateSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        RenderSelectedStateDetails();
+    }
+
+    private async void OnCompareStateClick(object sender, RoutedEventArgs e)
+    {
+        if (StateHistoryList.SelectedItem is not StateSnapshotView selected)
+        {
+            ShowStatus("Historico local", "Selecione um estado salvo para comparar.", InfoBarSeverity.Warning);
+            return;
+        }
+
+        var current = await _history.CaptureCurrentAsync("Estado atual", "current");
+        SelectedSnapshotDetails.Text = FormatSnapshotComparison(selected.Snapshot, current);
+    }
+
+    private void OnExportStateClick(object sender, RoutedEventArgs e)
+    {
+        if (StateHistoryList.SelectedItem is not StateSnapshotView selected)
+        {
+            ShowStatus("Historico local", "Selecione um estado salvo para copiar.", InfoBarSeverity.Warning);
+            return;
+        }
+
+        CopyTextToClipboard(StateHistoryStore.SerializeSnapshot(selected.Snapshot));
+        ShowStatus("Snapshot copiado", "JSON do backup copiado para a area de transferencia.", InfoBarSeverity.Success);
+    }
+
+    private async void OnImportStateClick(object sender, RoutedEventArgs e)
+    {
+        var input = new TextBox
+        {
+            AcceptsReturn = true,
+            MinHeight = 180,
+            TextWrapping = TextWrapping.Wrap,
+            PlaceholderText = "Cole aqui o JSON de um snapshot exportado"
+        };
+
+        var dialog = new ContentDialog
+        {
+            Title = "Importar snapshot",
+            Content = input,
+            PrimaryButtonText = "Importar",
+            CloseButtonText = "Cancelar",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = Content.XamlRoot
+        };
+
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary)
+        {
+            return;
+        }
+
+        try
+        {
+            var snapshot = StateHistoryStore.DeserializeSnapshot(input.Text)
+                ?? throw new JsonException("Snapshot vazio ou invalido.");
+            RenderHistory(await _history.ImportSnapshotAsync(snapshot));
+            ShowStatus("Snapshot importado", "Backup adicionado ao historico local.", InfoBarSeverity.Success);
+        }
+        catch (Exception ex)
+        {
+            ShowStatus("Importacao falhou", ex.Message, InfoBarSeverity.Error);
+        }
+    }
+
     private async void OnCs2Click(object sender, RoutedEventArgs e)
     {
         await RunWithBusyAsync(Cs2Button, async () =>
@@ -352,14 +523,21 @@ public sealed partial class MainWindow : Window
             SetPanel("Perfil CS2", "GPU, plano de energia e recursos do Windows", "Analisando");
             AddLog("run", "Perfil", "identificando configuracoes competitivas");
             var profile = await _cs2.AnalyzeAsync();
+            _lastCs2Profile = profile;
             Cs2Summary.Visibility = Visibility.Visible;
+            Cs2PathsText.Visibility = Visibility.Visible;
+            Cs2BenchmarkPanel.Visibility = Visibility.Visible;
             Cs2Results.Visibility = Visibility.Visible;
-            Cs2Summary.Text = $"GPU: {profile.GpuName} | CS2: {(profile.Cs2Detected ? "detectado" : "nao encontrado")} | Energia: {profile.PowerPlan} | Game DVR: {profile.GameDvr} | HAGS: {profile.Hags}";
+            Cs2Summary.Text = $"GPU: {profile.GpuName} | Driver: {profile.DriverVersion} | CS2: {(profile.Cs2Detected ? "detectado" : "nao encontrado")} | Energia: {profile.PowerPlan} | Game DVR: {profile.GameDvr} | HAGS: {profile.Hags}";
+            Cs2PathsText.Text = $"Steam: {profile.SteamPath ?? "nao detectado"}\nCS2: {profile.Cs2Path ?? "nao detectado"}\nLaunch options: {profile.LaunchOptions}";
+            Cs2BenchmarkText.Text = FormatCs2Benchmark(profile.Benchmark);
+            Cs2BenchmarkScenarios.ItemsSource = profile.Benchmark.Scenarios;
             Cs2Results.ItemsSource = profile.Recommendations;
             ReplaceLog(new[]
             {
                 (profile.Cs2Detected ? "ok" : "info", "CS2", profile.Cs2Detected ? "instalacao detectada" : "nao localizado automaticamente"),
                 ("info", "GPU", profile.GpuName),
+                ("info", "FPS estimado", $"{profile.Benchmark.CurrentAverageFps} medio / {profile.Benchmark.CurrentOnePercentLowFps} 1% low"),
                 ("info", "Energia", profile.PowerPlan),
                 ("info", "Recomendacoes", $"{profile.Recommendations.Count} item(ns)")
             });
@@ -368,27 +546,34 @@ public sealed partial class MainWindow : Window
 
     private async Task<CleanTempResult> RunCleanCoreAsync(bool showConfirmation, bool rethrow = false)
     {
-        if (showConfirmation && !await ConfirmAsync("Limpeza de temporarios", "Remover arquivos temporarios seguros? Prefetch e Lixeira serao preservados."))
+        var options = BuildCleanOptions();
+        var modeText = options.DeepClean
+            ? "Remover temporarios, Prefetch e limpar Lixeira?"
+            : "Remover arquivos temporarios seguros? Prefetch e Lixeira serao preservados.";
+
+        if (showConfirmation && !await ConfirmAsync("Limpeza de temporarios", modeText))
         {
             return new CleanTempResult();
         }
 
         return await RunWithBusyAsync(CleanButton, async () =>
         {
-            SetPanel("Limpeza aplicada", "Arquivos removidos e itens preservados", "Aplicando");
-            CleanResult.Text = "Limpando temporarios seguros...";
+            SetPanel("Limpeza aplicada", options.DeepClean ? "Modo profundo com Prefetch e Lixeira" : "Arquivos removidos e itens preservados", "Aplicando");
+            CleanResult.Text = options.DeepClean ? "Limpando em modo profundo..." : "Limpando temporarios seguros...";
             CleanResult.Foreground = Brush(Colors.LightGray);
             AddLog("run", "Varredura", "em andamento");
 
-            var result = await _admin.RunAsync<CleanTempResult>("clean-temp", new CleanTempOptions());
-            CleanResult.Text = $"{result.FreedMB:0.#} MB liberados em {result.FilesRemoved} arquivos. Prefetch e Lixeira preservados.";
+            var result = await _admin.RunAsync<CleanTempResult>("clean-temp", options);
+            CleanResult.Text = options.DeepClean
+                ? $"{result.FreedMB:0.#} MB liberados em {result.FilesRemoved} arquivos. Prefetch/Lixeira incluidos."
+                : $"{result.FreedMB:0.#} MB liberados em {result.FilesRemoved} arquivos. Prefetch e Lixeira preservados.";
             CleanResult.Foreground = Brush(Colors.LightGreen);
 
             ReplaceLog(new[]
             {
                 ("ok", "Arquivos removidos", $"{result.FilesRemoved} item(ns)"),
                 ("ok", "Espaco liberado", $"{result.FreedMB:0.#} MB"),
-                ("info", "Tradeoff", "limpeza conservadora")
+                ("info", "Modo", result.DeepClean ? "profundo" : "seguro")
             }.Concat(result.Skipped.Select(item => ("info", "Preservado", item))));
 
             await LoadSystemInfoAsync();
@@ -463,6 +648,8 @@ public sealed partial class MainWindow : Window
             var result = await _processes.ListAsync();
             foreach (var item in result.Processes)
             {
+                var tag = ProcessTags.GetTag(item.Name, _settings.NeverKillProcesses, _settings.SuggestedKillProcesses);
+                var locked = string.Equals(tag, "preservado", StringComparison.OrdinalIgnoreCase);
                 _processItems.Add(new ProcessCandidateView
                 {
                     Name = item.Name,
@@ -470,7 +657,10 @@ public sealed partial class MainWindow : Window
                     Count = item.Count,
                     Pids = item.Pids,
                     HasWindow = item.HasWindow,
-                    IsSelected = ProcessTags.IsSuggested(item.Name)
+                    IsLocked = locked,
+                    IsSelected = !locked && ProcessTags.IsSuggested(item.Name, _settings.SuggestedKillProcesses),
+                    TagText = tag,
+                    ReasonText = ProcessTags.GetReason(item.Name, _settings.NeverKillProcesses, _settings.SuggestedKillProcesses)
                 });
             }
 
@@ -501,6 +691,7 @@ public sealed partial class MainWindow : Window
         try
         {
             var info = await _systemInfo.GetAsync();
+            _lastSystemInfo = info;
             RamValue.Text = $"{info.UsedMB / 1024d:0.0} / {info.TotalMB / 1024d:0.0} GB";
             RamBar.Value = info.UsedPct;
             CpuValue.Text = info.Cpu;
@@ -538,8 +729,9 @@ public sealed partial class MainWindow : Window
 
     private void RenderHistory(StateHistoryResult result)
     {
+        _lastHistory = result;
         _stateItems.Clear();
-        foreach (var item in result.History.Items.Take(4))
+        foreach (var item in result.History.Items.Take(25))
         {
             _stateItems.Add(new StateSnapshotView(item));
         }
@@ -729,6 +921,11 @@ public sealed partial class MainWindow : Window
 
     private async Task<bool> AskBackupBeforeApplyAsync(string title, string message)
     {
+        if (!_settings.RequireBackupBeforeSensitiveAction)
+        {
+            return await ConfirmAsync(title, message);
+        }
+
         var dialog = new ContentDialog
         {
             Title = title,
@@ -780,6 +977,129 @@ public sealed partial class MainWindow : Window
         StatusInfoBar.Message = message;
         StatusInfoBar.Severity = severity;
         StatusInfoBar.IsOpen = true;
+    }
+
+    private CleanTempOptions BuildCleanOptions()
+    {
+        return new CleanTempOptions { DeepClean = CleanDeepToggle.IsOn };
+    }
+
+    private void RenderCleanPreviewHint()
+    {
+        CleanPreviewText.Text = CleanDeepToggle.IsOn
+            ? "Modo profundo inclui Prefetch e Lixeira. Use antes apenas quando quiser limpeza agressiva."
+            : "Limpeza segura preserva Prefetch e Lixeira para evitar stutter e recarregamentos.";
+    }
+
+    private static string FormatCleanPreview(CleanTempResult preview)
+    {
+        var preserved = preview.Skipped.Count > 0
+            ? $" Preservado: {string.Join(", ", preview.Skipped)}."
+            : " Inclui Prefetch e Lixeira.";
+        return $"Preview: {preview.FilesRemoved} arquivo(s), {preview.FreedMB:0.#} MB em {preview.Details.Count} alvo(s).{preserved}";
+    }
+
+    private static string FormatBoostMetrics(BoostAllResult result)
+    {
+        return string.Join(Environment.NewLine, new[]
+        {
+            $"RAM: {FormatMemory(result.Before.UsedMB)} -> {FormatMemory(result.After.UsedMB)} ({FormatMemory(result.Memory.FreedMB)} liberados)",
+            $"Energia: {result.Before.PowerPlan} -> {result.After.PowerPlan}",
+            $"Limpeza: {result.Clean.FreedMB:0.#} MB / {result.Clean.FilesRemoved} arquivo(s) / {(result.Clean.DeepClean ? "profunda" : "segura")}",
+            $"Modo FPS: {result.Fps.Applied.Count} ajuste(s) / snapshot: {(string.IsNullOrWhiteSpace(result.Fps.StatePath) ? "indisponivel" : result.Fps.StatePath)}",
+            $"Avisos: {(result.Warnings.Count == 0 ? "nenhum" : string.Join(", ", result.Warnings))}"
+        });
+    }
+
+    private static string FormatCs2Benchmark(Cs2BenchmarkResult benchmark)
+    {
+        var factors = benchmark.Factors.Count > 0
+            ? string.Join("; ", benchmark.Factors.Take(5))
+            : "sem fatores detectados";
+
+        return string.Join(Environment.NewLine, new[]
+        {
+            $"{benchmark.CurrentAverageFps} FPS medio / {benchmark.CurrentOnePercentLowFps} FPS 1% low agora",
+            $"{benchmark.BoostAverageFps} FPS medio / {benchmark.BoostOnePercentLowFps} FPS 1% low com boost",
+            $"Confianca: {benchmark.Confidence}. {benchmark.Basis}",
+            $"Base: {factors}"
+        });
+    }
+
+    private void RenderSelectedStateDetails()
+    {
+        if (StateHistoryList.SelectedItem is not StateSnapshotView selected)
+        {
+            SelectedSnapshotDetails.Text = "Selecione um backup para ver plano de energia, chaves do Registro e diferencas.";
+            return;
+        }
+
+        SelectedSnapshotDetails.Text = FormatSnapshotDetails(selected.Snapshot);
+    }
+
+    private static string FormatSnapshotDetails(StateSnapshot snapshot)
+    {
+        var registry = snapshot.Registry.Count == 0
+            ? "sem chaves registradas"
+            : string.Join(Environment.NewLine, snapshot.Registry.Select(item =>
+                $"{item.Path} / {item.Name}: {(item.Exists ? item.Value?.ToString() ?? "null" : "nao existia")}"));
+
+        return string.Join(Environment.NewLine, new[]
+        {
+            $"ID: {snapshot.Id}",
+            $"Criado: {snapshot.CreatedAt:dd/MM/yyyy HH:mm}",
+            $"Origem: {snapshot.Source}",
+            $"Plano: {snapshot.PowerPlanName} ({snapshot.PowerPlanGuid ?? "sem guid"})",
+            registry
+        });
+    }
+
+    private static string FormatSnapshotComparison(StateSnapshot saved, StateSnapshot current)
+    {
+        var rows = new List<string>
+        {
+            $"Snapshot: {saved.Label}",
+            $"Plano salvo: {saved.PowerPlanName}",
+            $"Plano atual: {current.PowerPlanName}"
+        };
+
+        foreach (var savedEntry in saved.Registry)
+        {
+            var currentEntry = current.Registry.FirstOrDefault(item =>
+                string.Equals(item.Path, savedEntry.Path, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(item.Name, savedEntry.Name, StringComparison.OrdinalIgnoreCase));
+            var savedValue = savedEntry.Exists ? savedEntry.Value?.ToString() ?? "null" : "nao existia";
+            var currentValue = currentEntry?.Exists == true ? currentEntry.Value?.ToString() ?? "null" : "nao existe";
+            rows.Add($"{savedEntry.Name}: salvo={savedValue} atual={currentValue}");
+        }
+
+        return string.Join(Environment.NewLine, rows);
+    }
+
+    private static void CopyTextToClipboard(string text)
+    {
+        var package = new DataPackage();
+        package.SetText(text);
+        Clipboard.SetContent(package);
+    }
+
+    private static void SelectComboItem(ComboBox combo, string value)
+    {
+        foreach (var item in combo.Items.OfType<ComboBoxItem>())
+        {
+            if (string.Equals(item.Content?.ToString(), value, StringComparison.OrdinalIgnoreCase))
+            {
+                combo.SelectedItem = item;
+                return;
+            }
+        }
+
+        combo.SelectedIndex = 0;
+    }
+
+    private static string GetComboText(ComboBox combo, string fallback)
+    {
+        return (combo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? fallback;
     }
 
     private static string FormatMemory(long mb)

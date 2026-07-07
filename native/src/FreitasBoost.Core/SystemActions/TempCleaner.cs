@@ -16,26 +16,7 @@ public sealed class TempCleaner
     {
         options ??= new CleanTempOptions();
         var skipped = new List<string>();
-        var targets = new List<string?>
-        {
-            Environment.GetEnvironmentVariable("TEMP"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\Windows\INetCache"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CrashDumps")
-        }
-        .Where(path => !string.IsNullOrWhiteSpace(path))
-        .Distinct(StringComparer.OrdinalIgnoreCase)
-        .Select(path => path!)
-        .ToList();
-
-        if (options.DeepClean)
-        {
-            targets.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Prefetch"));
-        }
-        else
-        {
-            skipped.Add("Prefetch preservado para evitar piorar carregamentos");
-        }
+        var targets = GetTargets(options, skipped);
 
         long freed = 0;
         var removed = 0;
@@ -113,6 +94,90 @@ public sealed class TempCleaner
         return Task.FromResult(result);
     }
 
+    public Task<CleanTempResult> PreviewAsync(CleanTempOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        options ??= new CleanTempOptions();
+        var skipped = new List<string>();
+        var targets = GetTargets(options, skipped);
+        long bytes = 0;
+        var files = 0;
+        var details = new List<CleanTargetDetail>();
+
+        foreach (var target in targets)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!Directory.Exists(target))
+            {
+                continue;
+            }
+
+            long targetBytes = 0;
+            foreach (var file in EnumerateFilesSafe(target))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    var length = new FileInfo(file).Length;
+                    targetBytes += length;
+                    bytes += length;
+                    files++;
+                }
+                catch
+                {
+                    // Inaccessible files are ignored in the preview.
+                }
+            }
+
+            details.Add(new CleanTargetDetail
+            {
+                Path = target,
+                FreedMB = Math.Round(targetBytes / 1024d / 1024d, 1)
+            });
+        }
+
+        if (!options.DeepClean)
+        {
+            skipped.Add("Lixeira preservada");
+        }
+
+        return Task.FromResult(new CleanTempResult
+        {
+            DeepClean = options.DeepClean,
+            FreedBytes = bytes,
+            FreedMB = Math.Round(bytes / 1024d / 1024d, 1),
+            FilesRemoved = files,
+            RecycleBin = options.DeepClean,
+            Skipped = skipped,
+            Details = details
+        });
+    }
+
+    private static List<string> GetTargets(CleanTempOptions options, List<string> skipped)
+    {
+        var targets = new List<string?>
+        {
+            Environment.GetEnvironmentVariable("TEMP"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\Windows\INetCache"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CrashDumps")
+        }
+        .Where(path => !string.IsNullOrWhiteSpace(path))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .Select(path => path!)
+        .ToList();
+
+        if (options.DeepClean)
+        {
+            targets.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Prefetch"));
+        }
+        else
+        {
+            skipped.Add("Prefetch preservado para evitar piorar carregamentos");
+        }
+
+        return targets;
+    }
+
     private static IEnumerable<string> EnumerateFilesSafe(string root)
     {
         var pending = new Stack<string>();
@@ -161,4 +226,3 @@ public sealed class TempCleaner
         return all;
     }
 }
-

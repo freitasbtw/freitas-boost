@@ -277,6 +277,13 @@
                                 </Border>
                             </Grid>
 
+                            <Border x:Name="BoostMetricsPanel" Visibility="Collapsed" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="14">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Resumo antes/depois" FontWeight="SemiBold" />
+                                    <TextBlock x:Name="BoostMetricsText" Text="Aguardando boost." Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" FontSize="12" />
+                                </StackPanel>
+                            </Border>
+
                             <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10">
                                 <StackPanel>
                                     <Border Padding="16" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
@@ -286,7 +293,12 @@
                                             </Border>
                                             <StackPanel Grid.Column="1">
                                                 <TextBlock Text="Limpeza de temporarios" FontWeight="SemiBold" />
-                                                <TextBlock Text="%Temp%, Temp do Windows, cache web e dumps. Prefetch e Lixeira ficam preservados." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                                <TextBlock Text="%Temp%, Temp do Windows, cache web e dumps. O modo profundo tambem inclui Prefetch e Lixeira." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                                <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,8,0,0">
+                                                    <ToggleSwitch x:Name="CleanDeepToggle" OffContent="Segura" OnContent="Profunda" Toggled="OnCleanModeToggled" />
+                                                    <Button x:Name="CleanPreviewButton" Content="Prever" Click="OnPreviewCleanClick" Padding="10,4" />
+                                                </StackPanel>
+                                                <TextBlock x:Name="CleanPreviewText" Text="Limpeza segura preserva Prefetch e Lixeira." Foreground="{StaticResource FaintBrush}" FontSize="11" />
                                                 <TextBlock x:Name="CleanResult" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" FontSize="12" />
                                             </StackPanel>
                                             <Button x:Name="CleanButton" Grid.Column="2" Content="Limpar" Click="OnCleanClick" />
@@ -321,11 +333,16 @@
                                                 <ListView x:Name="ProcessList" SelectionMode="None" MaxHeight="230" Visibility="Collapsed">
                                                     <ListView.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10" Padding="6">
-                                                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" />
-                                                                <TextBlock Grid.Column="1" Text="{Binding DisplayName}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                                <TextBlock Grid.Column="2" Text="{Binding TagText}" Foreground="{StaticResource InfoBrush}" VerticalAlignment="Center" FontSize="11" />
-                                                                <TextBlock Grid.Column="3" Text="{Binding MemoryText}" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" VerticalAlignment="Center" />
+                                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" Padding="6">
+                                                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" IsEnabled="{Binding CanSelect}" />
+                                                                <StackPanel Grid.Column="1">
+                                                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                                    <TextBlock Text="{Binding ReasonText}" Foreground="{StaticResource FaintBrush}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="2" HorizontalAlignment="Right">
+                                                                    <TextBlock Text="{Binding TagText}" Foreground="{StaticResource InfoBrush}" FontSize="11" HorizontalAlignment="Right" />
+                                                                    <TextBlock Text="{Binding MemoryText}" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" HorizontalAlignment="Right" />
+                                                                </StackPanel>
                                                             </Grid>
                                                         </DataTemplate>
                                                     </ListView.ItemTemplate>
@@ -376,7 +393,7 @@
                                             </StackPanel>
                                         </Grid>
                                     </Border>
-                                    <ListView x:Name="StateHistoryList" MaxHeight="420" SelectionMode="Single">
+                                    <ListView x:Name="StateHistoryList" MaxHeight="420" SelectionMode="Single" SelectionChanged="OnStateSelectionChanged">
                                         <ListView.ItemTemplate>
                                             <DataTemplate>
                                                 <StackPanel Padding="8,6">
@@ -386,8 +403,17 @@
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
                                     </ListView>
+                                    <Border BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,1,0,0" Padding="12">
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="Detalhes do snapshot" FontWeight="SemiBold" />
+                                            <TextBlock x:Name="SelectedSnapshotDetails" Text="Selecione um backup para ver plano de energia, chaves do Registro e diferencas." Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" FontSize="12" />
+                                        </StackPanel>
+                                    </Border>
                                     <StackPanel Orientation="Horizontal" Spacing="8" Padding="12">
                                         <Button x:Name="RestoreStateButton" Content="Restaurar selecionado" Click="OnRestoreStateClick" />
+                                        <Button x:Name="CompareStateButton" Content="Comparar" Click="OnCompareStateClick" />
+                                        <Button x:Name="ExportStateButton" Content="Copiar JSON" Click="OnExportStateClick" />
+                                        <Button x:Name="ImportStateButton" Content="Importar JSON" Click="OnImportStateClick" />
                                         <Button x:Name="DeleteStateButton" Content="Apagar selecionado" Click="OnDeleteStateClick" Foreground="{StaticResource DangerBrush}" />
                                     </StackPanel>
                                 </StackPanel>
@@ -462,6 +488,26 @@
                                     </Grid>
                                     <StackPanel Padding="14" Spacing="10">
                                         <TextBlock x:Name="Cs2Summary" Foreground="{StaticResource InfoBrush}" Visibility="Collapsed" />
+                                        <TextBlock x:Name="Cs2PathsText" Foreground="{StaticResource FaintBrush}" FontFamily="Cascadia Mono" FontSize="11" Visibility="Collapsed" />
+                                        <Border x:Name="Cs2BenchmarkPanel" Visibility="Collapsed" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="8" Padding="12">
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="Benchmark estimado" FontWeight="SemiBold" />
+                                                <TextBlock x:Name="Cs2BenchmarkText" Foreground="{StaticResource MutedBrush}" FontFamily="Cascadia Mono" FontSize="12" />
+                                                <ItemsControl x:Name="Cs2BenchmarkScenarios">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid ColumnDefinitions="*,Auto" Padding="0,4" ColumnSpacing="8">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                                                    <TextBlock Text="{Binding Notes}" Foreground="{StaticResource FaintBrush}" FontSize="11" />
+                                                                </StackPanel>
+                                                                <TextBlock Grid.Column="1" Text="{Binding AverageFps}" Foreground="{StaticResource AccentBrush}" FontFamily="Cascadia Mono" FontWeight="SemiBold" />
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
                                         <ItemsControl x:Name="Cs2Results" Visibility="Collapsed">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
@@ -469,9 +515,10 @@
                                                         <StackPanel>
                                                             <Grid ColumnDefinitions="*,Auto">
                                                                 <TextBlock Text="{Binding Category}" Foreground="{StaticResource InfoBrush}" FontWeight="SemiBold" FontSize="11" />
-                                                                <TextBlock Grid.Column="1" Text="{Binding Impact}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                                                <TextBlock Grid.Column="1" Text="{Binding Status}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextTrimming="CharacterEllipsis" />
                                                             </Grid>
                                                             <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Margin="0,6,0,0" />
+                                                            <TextBlock Text="{Binding Impact}" Foreground="{StaticResource InfoBrush}" FontSize="12" />
                                                             <TextBlock Text="{Binding Tradeoff}" Foreground="{StaticResource MutedBrush}" FontSize="12" />
                                                             <TextBlock Text="{Binding Action}" Foreground="{StaticResource FaintBrush}" FontSize="11" Margin="0,6,0,0" />
                                                         </StackPanel>
@@ -493,16 +540,17 @@
                             </Border>
 
                             <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1" CornerRadius="10" Padding="16">
-                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                                     <Border Width="36" Height="36" CornerRadius="8" Background="#2238BDF8" BorderBrush="#5538BDF8" BorderThickness="1">
                                         <FontIcon Glyph="&#xE72E;" Foreground="{StaticResource AccentBrush}" FontSize="16" />
                                     </Border>
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="Backup antes de aplicar" FontWeight="SemiBold" />
-                                        <TextBlock Text="Modo FPS, Boost completo e restauracoes sempre perguntam se voce quer salvar snapshot antes." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                    <StackPanel Grid.Column="1" Spacing="10">
+                                        <TextBlock Text="Fluxo seguro" FontWeight="SemiBold" />
+                                        <ToggleSwitch x:Name="RequireBackupToggle" Header="Sempre oferecer backup antes de ajustes sensiveis" OffContent="Desligado" OnContent="Ligado" />
+                                        <ToggleSwitch x:Name="DeepCleanDefaultToggle" Header="Usar limpeza profunda por padrao" OffContent="Segura" OnContent="Profunda" />
+                                        <ToggleSwitch x:Name="SkipOnboardingToggle" Header="Pular tela inicial nas proximas aberturas" OffContent="Mostrar" OnContent="Pular" />
                                         <TextBlock x:Name="SettingsBackupPath" Text="Caminho do historico ainda nao carregado" Foreground="{StaticResource FaintBrush}" FontFamily="Cascadia Mono" FontSize="11" Margin="0,6,0,0" />
                                     </StackPanel>
-                                    <Button Grid.Column="2" Content="Salvar agora" Click="OnSaveStateClick" />
                                 </Grid>
                             </Border>
 
@@ -511,9 +559,17 @@
                                     <Border Width="36" Height="36" CornerRadius="8" Background="#22FBBF24" BorderBrush="#55FBBF24" BorderThickness="1">
                                         <FontIcon Glyph="&#xE7BA;" Foreground="{StaticResource WarningBrush}" FontSize="16" />
                                     </Border>
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="Execucao elevada sob demanda" FontWeight="SemiBold" />
-                                        <TextBlock Text="O aplicativo abre sem exigir administrador. Acoes sensiveis chamam UAC somente quando necessario." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                    <StackPanel Grid.Column="1" Spacing="10">
+                                        <TextBlock Text="Perfil e processos" FontWeight="SemiBold" />
+                                        <ComboBox x:Name="SettingsProfileCombo" PlaceholderText="Perfil de uso" Width="240" HorizontalAlignment="Left">
+                                            <ComboBoxItem Content="Competitivo" />
+                                            <ComboBoxItem Content="Equilibrado" />
+                                            <ComboBoxItem Content="Conservador" />
+                                        </ComboBox>
+                                        <TextBlock Text="Nunca encerrar estes processos" Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                        <TextBox x:Name="NeverKillTextBox" PlaceholderText="discord, obs, chrome" />
+                                        <TextBlock Text="Sempre sugerir estes processos" Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                        <TextBox x:Name="SuggestedKillTextBox" PlaceholderText="onedrive, teams, widgets" />
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -524,10 +580,15 @@
                                         <FontIcon Glyph="&#xE946;" Foreground="{StaticResource InfoBrush}" FontSize="16" />
                                     </Border>
                                     <StackPanel Grid.Column="1">
-                                        <TextBlock Text="Tela inicial" FontWeight="SemiBold" />
-                                        <TextBlock Text="Reabre a entrada minimalista com o logo e o botao de acesso." Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                        <TextBlock Text="Acoes locais" FontWeight="SemiBold" />
+                                        <TextBlock Text="Salve preferencia, abra o onboarding, crie backup manual ou copie diagnostico para suporte." Foreground="{StaticResource MutedBrush}" FontSize="12" />
                                     </StackPanel>
-                                    <Button Grid.Column="2" Content="Abrir" Click="OnShowOnboardingClick" />
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                                        <Button x:Name="SaveSettingsButton" Content="Salvar" Click="OnSaveSettingsClick" />
+                                        <Button Content="Tela inicial" Click="OnShowOnboardingClick" />
+                                        <Button Content="Backup" Click="OnSaveStateClick" />
+                                        <Button x:Name="CopyDiagnosticButton" Content="Diagnostico" Click="OnCopyDiagnosticClick" />
+                                    </StackPanel>
                                 </Grid>
                             </Border>
                         </StackPanel>
@@ -568,23 +629,69 @@
             <Grid.Resources>
                 <SolidColorBrush x:Key="OnboardingTextBrush" Color="#EAF2FF" />
                 <SolidColorBrush x:Key="OnboardingAccentBrush" Color="#38BDF8" />
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{StaticResource OnboardingTextBrush}" />
+                    <Setter Property="TextWrapping" Value="Wrap" />
+                </Style>
             </Grid.Resources>
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="30">
-                <Border Width="220" Height="220" CornerRadius="44" Background="#071225" BorderBrush="#334A67" BorderThickness="1" Padding="18">
-                    <Image Source="ms-appx:///Assets/freitas-boost-logo.png" Stretch="Uniform" />
+            <Grid MaxWidth="860" HorizontalAlignment="Center" VerticalAlignment="Center" ColumnDefinitions="240,*" ColumnSpacing="26" Padding="24">
+                <StackPanel Spacing="18" VerticalAlignment="Center">
+                    <Border Width="190" Height="190" CornerRadius="38" Background="#071225" BorderBrush="#334A67" BorderThickness="1" Padding="18">
+                        <Image Source="ms-appx:///Assets/freitas-boost-logo.png" Stretch="Uniform" />
+                    </Border>
+                    <TextBlock Text="Freitas Boost" Foreground="{StaticResource OnboardingTextBrush}" FontSize="28" FontWeight="SemiBold" />
+                    <TextBlock Text="Prepare o PC para jogar com backup local, UAC sob demanda e ajustes reversiveis." Foreground="#9AA8BD" FontSize="13" />
+                </StackPanel>
+
+                <Border Grid.Column="1" Background="#0B1730" BorderBrush="#334A67" BorderThickness="1" CornerRadius="10" Padding="20">
+                    <StackPanel Spacing="16">
+                        <StackPanel>
+                            <TextBlock Text="Primeira configuracao" FontSize="20" FontWeight="SemiBold" />
+                            <TextBlock Text="Revise o perfil antes do primeiro boost." Foreground="#9AA8BD" FontSize="12" />
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                            <FontIcon Glyph="&#xE930;" Foreground="{StaticResource OnboardingAccentBrush}" />
+                            <TextBlock Grid.Column="1" Text="Detectar RAM, CPU, energia e permissoes locais." />
+                            <FontIcon Grid.Row="1" Glyph="&#xE72E;" Foreground="{StaticResource OnboardingAccentBrush}" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="Criar snapshot para restaurar plano de energia, Game Mode e Game DVR." />
+                            <FontIcon Grid.Row="2" Glyph="&#xE950;" Foreground="{StaticResource OnboardingAccentBrush}" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="Escolher perfil de uso para limpeza, processos e benchmark CS2." />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Perfil" Foreground="#9AA8BD" FontSize="12" />
+                                <ComboBox x:Name="OnboardingProfileCombo" SelectedIndex="0">
+                                    <ComboBoxItem Content="Competitivo" />
+                                    <ComboBoxItem Content="Equilibrado" />
+                                    <ComboBoxItem Content="Conservador" />
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="8">
+                                <ToggleSwitch x:Name="OnboardingBackupToggle" Header="Backup antes de aplicar" IsOn="True" OffContent="Opcional" OnContent="Recomendado" />
+                                <ToggleSwitch x:Name="OnboardingDeepCleanToggle" Header="Limpeza profunda" OffContent="Nao" OnContent="Sim" />
+                            </StackPanel>
+                        </Grid>
+
+                        <ToggleSwitch x:Name="OnboardingSkipToggle" Header="Nao mostrar esta tela nas proximas aberturas" IsOn="True" OffContent="Mostrar" OnContent="Pular" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                            <Button x:Name="OnboardingBackupButton" Content="Salvar backup agora" Click="OnOnboardingSaveBackupClick" />
+                            <Button
+                                x:Name="EnterAppButton"
+                                Content="Entrar"
+                                Click="OnEnterAppClick"
+                                MinWidth="140"
+                                Padding="28,12"
+                                Background="{StaticResource OnboardingAccentBrush}"
+                                Foreground="#03111F"
+                                FontSize="16"
+                                FontWeight="SemiBold" />
+                        </StackPanel>
+                    </StackPanel>
                 </Border>
-                <Button
-                    x:Name="EnterAppButton"
-                    Content="Entrar"
-                    Click="OnEnterAppClick"
-                    HorizontalAlignment="Center"
-                    MinWidth="170"
-                    Padding="28,12"
-                    Background="{StaticResource OnboardingAccentBrush}"
-                    Foreground="#03111F"
-                    FontSize="16"
-                    FontWeight="SemiBold" />
-            </StackPanel>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

@@ -66,6 +66,9 @@ internal static class Program
 
             "fps-restore" => await new FpsModeManager(logger, history).RestoreAsync().ConfigureAwait(false),
 
+            "boost-all" => await new BoostAllManager(logger, history).RunAsync(
+                request.Payload.Deserialize<BoostAllOptions>(JsonOptions) ?? new BoostAllOptions()).ConfigureAwait(false),
+
             "state-capture" => await history.CaptureAndSaveAsync("Estado manual", "manual").ConfigureAwait(false),
 
             "state-restore" => await history.RestoreStateAsync(
@@ -124,4 +127,3 @@ internal static class Program
         public string Id { get; set; } = "";
     }
 }
-

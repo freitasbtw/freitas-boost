@@ -17,6 +17,11 @@ public sealed class CleanTempOptions
     public bool DeepClean { get; set; }
 }
 
+public sealed class BoostAllOptions
+{
+    public CleanTempOptions Clean { get; set; } = new();
+}
+
 public sealed class CleanTargetDetail
 {
     public string Path { get; set; } = "";
@@ -43,6 +48,17 @@ public sealed class MemoryOptimizeResult
     public long AfterUsedMB { get; set; }
     public long FreedMB { get; set; }
     public int ProcessesTrimmed { get; set; }
+}
+
+public sealed class BoostAllResult
+{
+    public bool Ok { get; set; } = true;
+    public SystemInfoResult Before { get; set; } = new();
+    public SystemInfoResult After { get; set; } = new();
+    public CleanTempResult Clean { get; set; } = new();
+    public MemoryOptimizeResult Memory { get; set; } = new();
+    public FpsModeResult Fps { get; set; } = new();
+    public List<string> Warnings { get; set; } = [];
 }
 
 public class ProcessCandidate
@@ -138,7 +154,29 @@ public sealed class Cs2Recommendation
     public string Impact { get; set; } = "";
     public string Tradeoff { get; set; } = "";
     public string Action { get; set; } = "";
+    public string Status { get; set; } = "";
     public int Priority { get; set; }
+}
+
+public sealed class Cs2BenchmarkScenario
+{
+    public string Name { get; set; } = "";
+    public int AverageFps { get; set; }
+    public int OnePercentLowFps { get; set; }
+    public string Notes { get; set; } = "";
+}
+
+public sealed class Cs2BenchmarkResult
+{
+    public bool Estimated { get; set; } = true;
+    public string Confidence { get; set; } = "media";
+    public string Basis { get; set; } = "";
+    public int CurrentAverageFps { get; set; }
+    public int CurrentOnePercentLowFps { get; set; }
+    public int BoostAverageFps { get; set; }
+    public int BoostOnePercentLowFps { get; set; }
+    public List<string> Factors { get; set; } = [];
+    public List<Cs2BenchmarkScenario> Scenarios { get; set; } = [];
 }
 
 public sealed class Cs2ProfileResult
@@ -154,5 +192,7 @@ public sealed class Cs2ProfileResult
     public string GameMode { get; set; } = "desconhecido";
     public string GameDvr { get; set; } = "desconhecido";
     public string Hags { get; set; } = "desconhecido";
+    public string LaunchOptions { get; set; } = "nao detectado";
+    public Cs2BenchmarkResult Benchmark { get; set; } = new();
     public List<Cs2Recommendation> Recommendations { get; set; } = [];
 }

@@ -16,10 +16,16 @@ O projeto usa somente **C# + .NET + WinUI 3 / Windows App SDK**.
 - **Modo FPS** - plano de energia de Alto Desempenho, Modo Jogo do Windows,
   Game DVR desligado e cache DNS limpo. Antes de aplicar, salva um snapshot para
   restaurar o estado anterior.
+- **Boost consolidado** - limpeza, RAM e Modo FPS em uma unica chamada elevada,
+  reduzindo prompts UAC no fluxo principal.
 - **Historico local** - salva estados do Windows em `%APPDATA%\Freitas Boost`
-  para restaurar depois.
+  para restaurar depois, comparar snapshots e importar/exportar JSON.
 - **Perfil CS2** - detecta GPU/Steam/CS2, mostra o estado do Windows e recomenda
   ajustes manuais com custo-beneficio entre FPS medio, 1% low e latencia.
+- **Benchmark CS2 estimado** - calcula uma estimativa conservadora de FPS medio e
+  1% low para 1080p competitivo a partir de CPU, GPU, RAM, energia e Game DVR.
+- **Diagnostico** - copia um relatorio tecnico com specs, configuracoes, caminhos
+  de backup, CS2 e logs recentes para suporte.
 
 ## Requisitos
 
@@ -73,11 +79,24 @@ $env:NUGET_PACKAGES = "$PWD\native\.nuget-packages"
 .\.dotnet\dotnet.exe run --project native\src\FreitasBoost.App\FreitasBoost.App.csproj -c Debug --no-build
 ```
 
+Ou use o script reproduzivel, que prefere `.dotnet\dotnet.exe` quando existir e
+mantem o cache NuGet dentro de `native\.nuget-packages`:
+
+```powershell
+.\scripts\build-native.ps1 -Configuration Debug
+```
+
 ## Gerando build
 
 ```powershell
 $env:NUGET_PACKAGES = "$PWD\native\.nuget-packages"
 .\.dotnet\dotnet.exe publish native\src\FreitasBoost.App\FreitasBoost.App.csproj -c Release --self-contained false /p:NuGetAudit=false
+```
+
+Atalho:
+
+```powershell
+.\scripts\publish-native.ps1 -Configuration Release
 ```
 
 O executavel principal sai em `native\src\FreitasBoost.App\bin\Release\...`.

@@ -5,9 +5,12 @@ namespace FreitasBoost.App.Models;
 public sealed class ProcessCandidateView : ProcessCandidate
 {
     public bool IsSelected { get; set; }
+    public bool IsLocked { get; set; }
     public string DisplayName => Count > 1 ? $"{Name} ({Count})" : Name;
     public string MemoryText => $"{MemMB:0} MB";
-    public string TagText => ProcessTags.GetTag(Name);
+    public string TagText { get; set; } = "";
+    public string ReasonText { get; set; } = "";
+    public bool CanSelect => !IsLocked;
 }
 
 public sealed class StateSnapshotView
@@ -39,13 +42,30 @@ public static class ProcessTags
         "discord", "obs", "gamebar", "nvcontainer", "rtkauduservice"
     ];
 
-    public static bool IsSuggested(string name) => SuggestedKill.Any(tag => name.Contains(tag, StringComparison.OrdinalIgnoreCase));
-
-    public static string GetTag(string name)
+    public static bool IsSuggested(string name, IEnumerable<string>? extraSuggested = null)
     {
-        if (IsSuggested(name)) return "sugerido";
+        return SuggestedKill.Concat(extraSuggested ?? Enumerable.Empty<string>())
+            .Any(tag => name.Contains(tag, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public static bool IsPreserved(string name, IEnumerable<string>? neverKill = null)
+    {
+        return (neverKill ?? Enumerable.Empty<string>()).Any(tag => name.Contains(tag, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public static string GetTag(string name, IEnumerable<string>? neverKill = null, IEnumerable<string>? extraSuggested = null)
+    {
+        if (IsPreserved(name, neverKill)) return "preservado";
+        if (IsSuggested(name, extraSuggested)) return "sugerido";
         if (ManualReview.Any(tag => name.Contains(tag, StringComparison.OrdinalIgnoreCase))) return "manual";
         return "";
     }
-}
 
+    public static string GetReason(string name, IEnumerable<string>? neverKill = null, IEnumerable<string>? extraSuggested = null)
+    {
+        if (IsPreserved(name, neverKill)) return "Preferencia local: nunca encerrar.";
+        if (IsSuggested(name, extraSuggested)) return "Baixo risco ou marcado como sugestao nas configuracoes.";
+        if (ManualReview.Any(tag => name.Contains(tag, StringComparison.OrdinalIgnoreCase))) return "Revisao manual: pode afetar voz, captura, overlay ou driver.";
+        return "Processo pesado detectado por uso de memoria.";
+    }
+}

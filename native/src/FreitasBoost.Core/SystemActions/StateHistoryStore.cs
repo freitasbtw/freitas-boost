@@ -128,6 +128,43 @@ public sealed class StateHistoryStore
         };
     }
 
+    public async Task<StateHistoryResult> ImportSnapshotAsync(StateSnapshot snapshot, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(snapshot.Id))
+        {
+            snapshot.Id = NewStateId();
+        }
+
+        if (string.IsNullOrWhiteSpace(snapshot.Label))
+        {
+            snapshot.Label = "Estado importado";
+        }
+
+        snapshot.Source = string.IsNullOrWhiteSpace(snapshot.Source) ? "importado" : snapshot.Source;
+        snapshot.CreatedAt = snapshot.CreatedAt == default ? DateTimeOffset.Now : snapshot.CreatedAt;
+        snapshot.Registry ??= [];
+
+        var history = await AddHistoryItemAsync(snapshot, cancellationToken).ConfigureAwait(false);
+        _logger.Info($"Estado importado: {snapshot.Id}.");
+
+        return new StateHistoryResult
+        {
+            Item = snapshot,
+            History = history,
+            Path = HistoryPath
+        };
+    }
+
+    public static string SerializeSnapshot(StateSnapshot snapshot)
+    {
+        return JsonSerializer.Serialize(snapshot, JsonOptions);
+    }
+
+    public static StateSnapshot? DeserializeSnapshot(string json)
+    {
+        return JsonSerializer.Deserialize<StateSnapshot>(json, JsonOptions);
+    }
+
     public async Task<RestoreModeResult> RestoreFpsSnapshotAsync(CancellationToken cancellationToken = default)
     {
         var result = new RestoreModeResult();
@@ -260,4 +297,3 @@ public sealed class StateHistoryStore
         return $"{DateTimeOffset.UtcNow:yyyyMMddTHHmmssfffZ}-{Guid.NewGuid():N}"[..28];
     }
 }
-

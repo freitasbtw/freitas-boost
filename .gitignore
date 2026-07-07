@@ -4,3 +4,4 @@ native/**/bin/
 native/**/obj/
 native/**/.vs/
 native/.nuget-packages/
+artifacts/
